@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-import 'package:zytranow/controller/nav_controller.dart';
-import 'package:zytranow/controller/home_provider.dart';
-import 'package:zytranow/controller/category_provider.dart';
-import 'package:zytranow/controller/order_again_provider.dart';
-import 'package:zytranow/controller/auth_provider.dart';
-import 'package:zytranow/controller/carousel_provider.dart';
-import 'package:zytranow/controller/location_provider.dart';
-import 'package:zytranow/controller/category_products_provider.dart';
-import 'package:zytranow/view/splash/splash_screen.dart';
-import 'package:zytranow/view/categories/category_products_screen.dart';
+import 'package:zytranow/controllers/nav_controller.dart';
+import 'package:zytranow/controllers/home_provider.dart';
+import 'package:zytranow/controllers/category_provider.dart';
+import 'package:zytranow/controllers/order_again_provider.dart';
+import 'package:zytranow/controllers/auth_provider.dart';
+import 'package:zytranow/controllers/carousel_provider.dart';
+import 'package:zytranow/controllers/location_provider.dart';
+import 'package:zytranow/controllers/category_products_provider.dart';
+import 'package:zytranow/controllers/cart_provider.dart';
+import 'package:zytranow/view/screens/splash/splash_screen.dart';
+import 'package:zytranow/view/screens/categories/category_products_screen.dart';
 
 // App entry contract (small):
 // - Input: platform device dimensions, OS text scale.
@@ -33,7 +34,8 @@ final List<SingleChildWidget> _appProviders = [
   ChangeNotifierProvider(create: (_) => NavProvider()),
   ChangeNotifierProvider(create: (_) => HomeProvider()),
   ChangeNotifierProvider(create: (_) => CategoryProvider()),
-    ChangeNotifierProvider(create: (_) => CategoryProductsProvider()),
+  ChangeNotifierProvider(create: (_) => CategoryProductsProvider()),
+  ChangeNotifierProvider(create: (_) => CartProvider()),
   ChangeNotifierProvider(create: (_) => OrderAgainProvider()),
   ChangeNotifierProvider(create: (_) => AuthProvider()),
   ChangeNotifierProvider(create: (_) => CarouselProvider()),

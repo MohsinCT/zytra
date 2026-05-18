@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zytranow/controller/cart_provider.dart';
+import 'package:zytranow/controllers/cart_provider.dart';
 
 
 class CartScreen extends StatelessWidget {
