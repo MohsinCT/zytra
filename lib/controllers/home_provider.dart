@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:zytranow/models/product.dart';
+import 'package:zytranow/services/api_service.dart';
 
 class Category {
   final String name;
@@ -42,8 +43,9 @@ class HomeProvider extends ChangeNotifier {
   }
 
   Future<void> fetchHomeData() async {
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
+    // Simulate API call loading state
+    isLoading = true;
+    notifyListeners();
 
     allCategories = [
       Category(name: 'Cleaning Essentials', imageUrl: 'assets/images/cleaning.png', icon: Icons.cleaning_services),
@@ -67,7 +69,7 @@ class HomeProvider extends ChangeNotifier {
       Category(name: 'Perfumes & Gift Sets', imageUrl: '', icon: Icons.local_florist),
     ];
 
-    popularProducts = [
+    final localPopular = [
       Product(
         id: 'detergent_powder_1kg',
         name: 'Luxe Detergent Powder 1kg',
@@ -134,6 +136,8 @@ class HomeProvider extends ChangeNotifier {
         images: ['https://images.unsplash.com/photo-1608248597481-496100c80836?q=80&w=600'],
       ),
     ];
+
+    popularProducts = await ApiService.getPopularProducts(localPopular);
 
     banners = [
       BannerModel(title: "Power cut? Get candles in minutes", category: "Emergency Items", icon: Icons.lightbulb_outline),

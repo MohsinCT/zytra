@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zytranow/models/product.dart';
 import 'package:zytranow/services/product_service.dart';
 import 'package:zytranow/controllers/category_products_provider.dart';
 import 'package:zytranow/core/utils/responsive.dart';
+import 'package:zytranow/view/screens/home/widgets/shimmer_loader.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? category;
@@ -17,6 +19,8 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   String _query = '';
   late TextEditingController _controller;
+  List<Product> _results = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -30,13 +34,37 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
+  /// Queries the API or local cache asynchronously with race-condition mitigation.
+  Future<void> _performSearch(String query) async {
+    setState(() {
+      _query = query;
+    });
+
+    if (query.isEmpty) {
+      setState(() {
+        _results = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    final searchResults = await ProductService.searchProducts(query, category: widget.category);
+
+    if (_query == query && mounted) {
+      setState(() {
+        _results = searchResults;
+        _isSearching = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Get search results
-    final List<Product> results = _query.isNotEmpty 
-        ? ProductService.searchProducts(_query, category: widget.category)
-        : [];
-        
+    final results = _results;
     final resp = Responsive.of(context);
 
     return Scaffold(
@@ -61,14 +89,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   ],
                   border: Border.all(color: Colors.grey.shade200),
                 ),
-                child: TextField(
+                 child: TextField(
                   controller: _controller,
                   autofocus: true,
-                  onChanged: (val) {
-                    setState(() {
-                      _query = val;
-                    });
-                  },
+                  onChanged: _performSearch,
                   decoration: InputDecoration(
                     hintText: widget.category != null 
                         ? "Search in ${widget.category}..." 
@@ -89,9 +113,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             icon: const Icon(Icons.clear, color: Colors.black54),
                             onPressed: () {
                               _controller.clear();
-                              setState(() {
-                                _query = '';
-                              });
+                              _performSearch('');
                             },
                           )
                         : Padding(
@@ -128,11 +150,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         ],
                       ),
                     )
-                  : results.isEmpty
-                      ? Center(
-                          child: Text("No products found for '$_query'", style: TextStyle(color: Colors.grey.shade600)),
-                        )
-                      : GridView.builder(
+                  : _isSearching
+                      ? GridView.builder(
                           padding: EdgeInsets.symmetric(horizontal: resp.scale(12), vertical: resp.scale(10)),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: resp.gridColumns,
@@ -140,12 +159,33 @@ class _SearchScreenState extends State<SearchScreen> {
                             crossAxisSpacing: resp.scale(12),
                             childAspectRatio: resp.isDesktop ? 0.75 : 0.66,
                           ),
-                          itemCount: results.length,
+                          itemCount: 6,
                           itemBuilder: (context, index) {
-                            final p = results[index];
-                            return _SearchProductCard(product: p, imageHeight: resp.productImageHeight);
+                            return ShimmerLoader(
+                              width: double.infinity,
+                              height: resp.productImageHeight + 110,
+                              borderRadius: 12,
+                            );
                           },
-                        ),
+                        )
+                      : results.isEmpty
+                          ? Center(
+                              child: Text("No products found for '$_query'", style: TextStyle(color: Colors.grey.shade600)),
+                            )
+                          : GridView.builder(
+                              padding: EdgeInsets.symmetric(horizontal: resp.scale(12), vertical: resp.scale(10)),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: resp.gridColumns,
+                                mainAxisSpacing: resp.scale(12),
+                                crossAxisSpacing: resp.scale(12),
+                                childAspectRatio: resp.isDesktop ? 0.75 : 0.66,
+                              ),
+                              itemCount: results.length,
+                              itemBuilder: (context, index) {
+                                final p = results[index];
+                                return _SearchProductCard(product: p, imageHeight: resp.productImageHeight);
+                              },
+                            ),
             ),
           ],
         ),
@@ -189,7 +229,32 @@ class _SearchProductCard extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: product.imageAsset.isNotEmpty
-                        ? Image.asset(product.imageAsset, width: resp.scale(90), height: resp.scale(90), fit: BoxFit.contain)
+                        ? Hero(
+                            tag: 'product_image_${product.id}',
+                            child: product.imageAsset.startsWith('http')
+                                ? CachedNetworkImage(
+                                    imageUrl: product.imageAsset,
+                                    width: resp.scale(90),
+                                    height: resp.scale(90),
+                                    fit: BoxFit.contain,
+                                    placeholder: (context, url) => const ShimmerLoader(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      borderRadius: 10,
+                                    ),
+                                    errorWidget: (context, url, error) => const Icon(
+                                      Icons.image_not_supported,
+                                      size: 30,
+                                      color: Colors.grey,
+                                    ),
+                                  )
+                                : Image.asset(
+                                    product.imageAsset,
+                                    width: resp.scale(90),
+                                    height: resp.scale(90),
+                                    fit: BoxFit.contain,
+                                  ),
+                          )
                         : const SizedBox.shrink(),
                   ),
                   Positioned(

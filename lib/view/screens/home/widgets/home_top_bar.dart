@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zytranow/controllers/location_provider.dart';
 import 'package:zytranow/view/screens/profile/profile_screen.dart';
+import 'package:zytranow/view/screens/location/select_location_screen.dart';
 
 class HomeTopBar extends StatelessWidget {
   const HomeTopBar({super.key});
@@ -45,38 +46,48 @@ class HomeTopBar extends StatelessWidget {
                 const SizedBox(height: 4),
                 Consumer<LocationProvider>(
                   builder: (context, locationProvider, child) {
-                    return Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Colors.black87,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        if (locationProvider.isLoading)
-                          Container(
-                            width: 80,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          )
-                        else
-                          Text(
-                            locationProvider.currentLocation,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SelectLocationScreen(),
                           ),
-                        const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Colors.black87,
-                          size: 18,
-                        ),
-                      ],
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: Colors.black87,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          if (locationProvider.isLoading)
+                            Container(
+                              width: 80,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            )
+                          else
+                            Text(
+                              locationProvider.currentLocation,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Colors.black87,
+                            size: 18,
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),

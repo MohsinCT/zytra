@@ -1,25 +1,32 @@
 import 'dart:math';
 import 'package:zytranow/models/product.dart';
+import 'package:zytranow/services/api_service.dart';
 
 class ProductService {
-  static List<Product> productsForCategory(String category) {
-    return _generateDummyProducts(category);
+  /// Fetches products for a specific category asynchronously from the Express/MongoDB server.
+  /// Gracefully falls back to high-fidelity local mock data if the API is offline.
+  static Future<List<Product>> productsForCategory(String category) async {
+    final offlineData = _generateDummyProducts(category);
+    return ApiService.getProductsByCategory(category, offlineData);
   }
 
-  static List<Product> searchProducts(String query, {String? category}) {
+  /// Searches products matching a query asynchronously from the Express/MongoDB search API.
+  /// Gracefully falls back to local query matching if the API is offline.
+  static Future<List<Product>> searchProducts(String query, {String? category}) async {
     final allProducts = _generateAllProducts();
     
     List<Product> baseList;
     if (category != null && category.isNotEmpty) {
-      baseList = productsForCategory(category);
+      baseList = _generateDummyProducts(category);
     } else {
       baseList = allProducts;
     }
     
-    if (query.isEmpty) return baseList;
-    
-    final lowerQuery = query.toLowerCase();
-    return baseList.where((p) => p.name.toLowerCase().contains(lowerQuery)).toList();
+    final offlineResults = query.isEmpty
+        ? baseList
+        : baseList.where((p) => p.name.toLowerCase().contains(query.toLowerCase())).toList();
+
+    return ApiService.searchProducts(query, offlineResults);
   }
 
   static List<Product> _generateAllProducts() {

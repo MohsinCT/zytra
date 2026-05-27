@@ -15,9 +15,12 @@ class CategoryProductsProvider extends ChangeNotifier {
   Set<String> get activeFilters => Set.unmodifiable(_activeFilters);
   bool get loaded => _loaded;
 
-  void loadCategory(String categoryName) {
+  Future<void> loadCategory(String categoryName) async {
     _category = categoryName;
-    _products = ProductService.productsForCategory(categoryName);
+    _loaded = false;
+    notifyListeners();
+
+    _products = await ProductService.productsForCategory(categoryName);
     _loaded = true;
     notifyListeners();
   }
