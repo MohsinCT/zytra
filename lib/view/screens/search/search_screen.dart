@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zytranow/models/product.dart';
 import 'package:zytranow/services/product_service.dart';
-import 'package:zytranow/controllers/category_products_provider.dart';
 import 'package:zytranow/core/utils/responsive.dart';
 import 'package:zytranow/view/screens/home/widgets/shimmer_loader.dart';
+
+import 'package:zytranow/controllers/cart_provider.dart';
+import 'package:zytranow/view/screens/categories/product_details_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? category;
@@ -202,8 +204,8 @@ class _SearchProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prov = Provider.of<CategoryProductsProvider>(context);
-    final qty = prov.quantityFor(product.id);
+    final cart = Provider.of<CartProvider>(context);
+    final qty = cart.quantityOf(product.id);
     final resp = Responsive.of(context);
 
     return Material(
@@ -212,7 +214,14 @@ class _SearchProductCard extends StatelessWidget {
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(product: product),
+            ),
+          );
+        },
         child: Padding(
           padding: EdgeInsets.all(resp.scale(8.0)),
           child: Column(
@@ -260,9 +269,26 @@ class _SearchProductCard extends StatelessWidget {
                   Positioned(
                     right: 6,
                     top: 6,
-                    child: Container(
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                      child: IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border, size: 18)),
+                    child: Consumer<CartProvider>(
+                      builder: (context, cart, child) {
+                        final isFav = cart.isWishlisted(product.id);
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              cart.toggleWishlist(product.id);
+                            },
+                            icon: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: isFav ? const Color(0xFFFF2D6F) : Colors.black87,
+                              size: 18,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -309,7 +335,7 @@ class _SearchProductCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  qty > 0 ? _SearchQtyControls(productId: product.id, qty: qty) : _SearchAddButton(productId: product.id),
+                  qty > 0 ? _SearchQtyControls(product: product, qty: qty) : _SearchAddButton(product: product),
                 ],
               )
             ],
@@ -321,53 +347,82 @@ class _SearchProductCard extends StatelessWidget {
 }
 
 class _SearchAddButton extends StatelessWidget {
-  final String productId;
-  const _SearchAddButton({required this.productId});
+  final Product product;
+  const _SearchAddButton({required this.product});
 
   @override
   Widget build(BuildContext context) {
-    final prov = Provider.of<CategoryProductsProvider>(context, listen: false);
+    final cart = Provider.of<CartProvider>(context, listen: false);
     return GestureDetector(
-      onTap: () => prov.increment(productId),
+      onTap: () {
+        cart.add(product);
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF1E1E24),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 120),
+            duration: const Duration(seconds: 1),
+            content: Text('Added ${product.name} to Cart!'),
+          ),
+        );
+      },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFFF2D7A)),
+          border: Border.all(color: const Color(0xFFFF2D6F), width: 1.5),
           boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0,2))],
         ),
-        child: const Text('ADD', style: TextStyle(color: Color(0xFFFF2D7A), fontWeight: FontWeight.bold)),
+        child: const Text('ADD', style: TextStyle(color: Color(0xFFFF2D6F), fontWeight: FontWeight.bold, fontSize: 13)),
       ),
     );
   }
 }
 
 class _SearchQtyControls extends StatelessWidget {
-  final String productId;
+  final Product product;
   final int qty;
-  const _SearchQtyControls({required this.productId, required this.qty});
+  const _SearchQtyControls({required this.product, required this.qty});
 
   @override
   Widget build(BuildContext context) {
-    final prov = Provider.of<CategoryProductsProvider>(context, listen: false);
+    final cart = Provider.of<CartProvider>(context, listen: false);
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF2D6F),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF2D6F).withOpacity(0.25),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
             padding: EdgeInsets.zero,
-            icon: const Icon(Icons.remove, size: 18), 
-            onPressed: () => prov.decrement(productId)
+            icon: const Icon(Icons.remove, size: 16, color: Colors.white), 
+            onPressed: () => cart.removeOne(product.id)
           ),
-          Text(qty.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              qty.toString(), 
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13)
+            ),
+          ),
           IconButton(
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
             padding: EdgeInsets.zero,
-            icon: const Icon(Icons.add, size: 18, color: Color(0xFFFF2D7A)), 
-            onPressed: () => prov.increment(productId)
+            icon: const Icon(Icons.add, size: 16, color: Colors.white), 
+            onPressed: () => cart.add(product)
           ),
         ],
       ),

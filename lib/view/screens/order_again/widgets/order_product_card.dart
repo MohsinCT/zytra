@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zytranow/controllers/order_again_provider.dart';
+import 'package:zytranow/controllers/cart_provider.dart';
+import 'package:zytranow/models/product.dart';
 
 class OrderProductCard extends StatelessWidget {
   final OrderProduct product;
@@ -8,6 +11,20 @@ class OrderProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartProvider>(context);
+    final qty = cart.quantityOf(product.id);
+
+    final standardProduct = Product(
+      id: product.id,
+      name: product.name,
+      imageAsset: product.imageUrl,
+      unit: product.quantity,
+      price: product.price,
+      deliveryTime: product.deliveryTime,
+      rating: product.rating,
+      reviews: product.ratingCount,
+    );
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -35,7 +52,7 @@ class OrderProductCard extends StatelessWidget {
                     color: Color(0xFFF8F9FA),
                     borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Icon(
                       Icons.electrical_services,
                       size: 44,
@@ -125,22 +142,80 @@ class OrderProductCard extends StatelessWidget {
                               color: Colors.black87,
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: const Color(0xFFFF2D6F), width: 1.5),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              "ADD",
-                              style: TextStyle(
-                                color: Color(0xFFFF2D6F),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
+                          qty > 0
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF2D6F),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFF2D6F).withOpacity(0.25),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                                        padding: EdgeInsets.zero,
+                                        icon: const Icon(Icons.remove, size: 16, color: Colors.white),
+                                        onPressed: () => cart.removeOne(product.id),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                        child: Text(
+                                          qty.toString(),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                                        padding: EdgeInsets.zero,
+                                        icon: const Icon(Icons.add, size: 16, color: Colors.white),
+                                        onPressed: () => cart.add(standardProduct),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : GestureDetector(
+                                  onTap: () {
+                                    cart.add(standardProduct);
+                                    ScaffoldMessenger.of(context).clearSnackBars();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: const Color(0xFF1E1E24),
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 120),
+                                        duration: const Duration(seconds: 1),
+                                        content: Text('Added ${product.name} to Cart!'),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(color: const Color(0xFFFF2D6F), width: 1.5),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      "ADD",
+                                      style: TextStyle(
+                                        color: Color(0xFFFF2D6F),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                         ],
                       ),
                     ],

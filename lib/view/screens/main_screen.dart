@@ -5,6 +5,7 @@ import 'package:zytranow/controllers/nav_controller.dart';
 import 'package:zytranow/view/screens/home/home_screen.dart';
 import 'package:zytranow/view/screens/order_again/order_again_screen.dart';
 import 'package:zytranow/view/screens/categories/categories_screen.dart';
+import 'package:zytranow/view/widgets/floating_cart_capsule.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -22,14 +23,27 @@ class MainScreen extends StatelessWidget {
     // Ensure we don't crash if index goes out of bounds when changing tabs length
     final safeIndex = nav.index < screens.length ? nav.index : 0;
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       extendBody: true, // IMPORTANT for glass effect
-      // Wrap body in Center and ConstrainedBox for Desktop/Web responsiveness
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
-          child: screens[safeIndex],
-        ),
+      body: Stack(
+        children: [
+          // Main screen body
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: screens[safeIndex],
+            ),
+          ),
+          // Persistent Floating View Cart Capsule
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: bottomPadding + 110, // Sits beautifully above custom glassmorphic nav bar (75 height + 24 padding)
+            child: const FloatingCartCapsule(),
+          ),
+        ],
       ),
 
       // Advanced Glassmorphism Nav Bar

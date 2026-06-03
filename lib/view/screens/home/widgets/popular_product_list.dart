@@ -128,35 +128,84 @@ class PopularProductList extends StatelessWidget {
                             ),
                             Consumer<CartProvider>(
                               builder: (context, cart, child) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    cart.add(product);
-                                    ScaffoldMessenger.of(context).clearSnackBars();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        backgroundColor: const Color(0xFF1E1E24),
-                                        behavior: SnackBarBehavior.floating,
-                                        duration: const Duration(seconds: 1),
-                                        content: Text('Added ${product.name} to Cart!'),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      border: Border.all(
-                                        color: const Color(0xFFFF2D6F),
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.add,
-                                      color: Color(0xFFFF2D6F),
-                                      size: 14,
-                                    ),
-                                  ),
-                                );
+                                final qty = cart.quantityOf(product.id);
+
+                                return qty > 0
+                                    ? Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFF2D6F),
+                                          borderRadius: BorderRadius.circular(8),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFFF2D6F).withOpacity(0.2),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () => cart.removeOne(product.id),
+                                              child: const Padding(
+                                                padding: EdgeInsets.all(6.0),
+                                                child: Icon(Icons.remove, size: 12, color: Colors.white),
+                                              ),
+                                            ),
+                                            Text(
+                                              qty.toString(),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            GestureDetector(
+                                              onTap: () => cart.add(product),
+                                              child: const Padding(
+                                                padding: EdgeInsets.all(6.0),
+                                                child: Icon(Icons.add, size: 12, color: Colors.white),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : GestureDetector(
+                                        onTap: () {
+                                          cart.add(product);
+                                          ScaffoldMessenger.of(context).clearSnackBars();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              backgroundColor: const Color(0xFF1E1E24),
+                                              behavior: SnackBarBehavior.floating,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 120),
+                                              duration: const Duration(seconds: 1),
+                                              content: Text('Added ${product.name} to Cart!'),
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border.all(
+                                              color: const Color(0xFFFF2D6F),
+                                              width: 1.5,
+                                            ),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Text(
+                                            'ADD',
+                                            style: TextStyle(
+                                              color: Color(0xFFFF2D6F),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ),
+                                      );
                               },
                             ),
                           ],

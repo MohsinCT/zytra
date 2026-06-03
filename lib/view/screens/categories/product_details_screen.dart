@@ -110,6 +110,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
+    final qty = cart.quantityOf(widget.product.id);
     final resp = Responsive.of(context);
     final isBeautyFashion = widget.product.category.toLowerCase().contains('lipstick') ||
         widget.product.category.toLowerCase().contains('gloss') ||
@@ -1125,45 +1126,84 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         ),
                       ),
                       
-                      // Animated Add To Cart Action
-                      ScaleTransition(
-                        scale: _cartScaleAnimation,
-                        child: GestureDetector(
-                          onTap: () => _triggerAddToCartAnimation(cart),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFF2D6F), Color(0xFFFF6A9A)],
+                      // Animated Add To Cart Action / Qty controls
+                      qty > 0
+                          ? Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF2D6F),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFF2D6F).withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFF2D6F).withOpacity(0.35),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                )
-                              ],
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 18),
-                                SizedBox(width: 8),
-                                Text(
-                                  'ADD TO CART',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    letterSpacing: 0.5,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.remove, color: Colors.white, size: 18),
+                                    onPressed: () => cart.removeOne(widget.product.id),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                                    child: Text(
+                                      qty.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.add, color: Colors.white, size: 18),
+                                    onPressed: () => cart.add(widget.product),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ScaleTransition(
+                              scale: _cartScaleAnimation,
+                              child: GestureDetector(
+                                onTap: () => _triggerAddToCartAnimation(cart),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFFFF2D6F), Color(0xFFFF6A9A)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFF2D6F).withOpacity(0.35),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      )
+                                    ],
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 18),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'ADD TO CART',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),

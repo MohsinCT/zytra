@@ -7,7 +7,20 @@ class CartProvider extends ChangeNotifier {
 
   List<Product> get items => _items;
 
-  double get total => _items.fold(0, (sum, item) => sum + item.price);
+  // Return unique products in the cart for listing on the cart page
+  List<Product> get uniqueItems {
+    final Map<String, Product> unique = {};
+    for (var item in _items) {
+      unique[item.id] = item;
+    }
+    return unique.values.toList();
+  }
+
+  int get totalItems => _items.length;
+  int get totalQuantity => _items.length;
+  double get totalPrice => _items.fold(0.0, (sum, item) => sum + item.price);
+
+  double get total => totalPrice;
 
   // Cart quantity helpers
   int quantityOf(String productId) {
@@ -37,6 +50,11 @@ class CartProvider extends ChangeNotifier {
 
   void clearProduct(String productId) {
     _items.removeWhere((item) => item.id == productId);
+    notifyListeners();
+  }
+
+  void clearCart() {
+    _items.clear();
     notifyListeners();
   }
 
