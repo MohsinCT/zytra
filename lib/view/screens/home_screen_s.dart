@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
     final products = context.watch<ProductProvider>().products;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ZytraNow')),
+      appBar: AppBar(title: const Text('Zytra')),
       body: Column(
         children: [
           Padding(

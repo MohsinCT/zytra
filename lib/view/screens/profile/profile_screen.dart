@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zytranow/controllers/home_provider.dart';
-import 'package:zytranow/controllers/auth_provider.dart';
+// auth_provider not required here; user info is handled by UserProvider
+import 'package:zytranow/controllers/user_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -21,6 +22,8 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 20),
                   _buildQuickActions(),
+                  const SizedBox(height: 18),
+                  _buildNameCard(context),
                   const SizedBox(height: 24),
                   _buildSettingsCards(context),
                   const SizedBox(height: 32),
@@ -67,7 +70,6 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildDarkHeader(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
     
     return SliverToBoxAdapter(
       child: Container(
@@ -108,22 +110,32 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(width: 34), // Balance the back button for exact centering
               ],
             ),
-            const SizedBox(height: 30),
-            const Text(
-              "Mohsin",
-              style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-            ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(Icons.phone_outlined, color: Colors.white70, size: 16),
-                const SizedBox(width: 4),
-                Text("+91-${auth.phoneNumber ?? "7994058834"}", style: const TextStyle(color: Colors.white70, fontSize: 13)),
-                const SizedBox(width: 20),
-                const Icon(Icons.cake_outlined, color: Colors.white70, size: 16),
-                const SizedBox(width: 4),
-                const Text("26 Oct 2004", style: TextStyle(color: Colors.white70, fontSize: 13)),
-              ],
+            Consumer<UserProvider>(
+              builder: (context, user, _) {
+                final displayName = user.fullName ?? 'Add your name';
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Icon(Icons.phone_outlined, color: Colors.white70, size: 16),
+                        const SizedBox(width: 4),
+                        Text("+91-${user.phoneNumber}", style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                        const SizedBox(width: 20),
+                        const Icon(Icons.cake_outlined, color: Colors.white70, size: 16),
+                        const SizedBox(width: 4),
+                        const Text("26 Oct 2004", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -164,6 +176,115 @@ class ProfileScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNameCard(BuildContext context) {
+    return Consumer<UserProvider>(builder: (context, user, _) {
+      final hasName = (user.fullName ?? '').isNotEmpty;
+      return GestureDetector(
+        onTap: () => _showAddNameSheet(context, user.fullName),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 26,
+                backgroundColor: Colors.pink.shade50,
+                child: Text(
+                  hasName ? user.fullName!.substring(0, 1).toUpperCase() : 'A',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.pink),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasName ? user.fullName! : 'Add your name',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hasName ? 'Complete your account details' : 'Tap to add your full name',
+                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.edit, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  void _showAddNameSheet(BuildContext context, String? currentName) {
+    final controller = TextEditingController(text: currentName ?? '');
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Add your full name', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    hintText: 'Full name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final name = controller.text.trim();
+                          if (name.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter a valid name')),
+                            );
+                            return;
+                          }
+                          final user = Provider.of<UserProvider>(context, listen: false);
+                          user.setFullName(name);
+                          Navigator.of(ctx).pop();
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                          child: Text('Save', style: TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -8,6 +8,7 @@ import 'package:zytranow/controllers/order_again_provider.dart';
 import 'package:zytranow/controllers/auth_provider.dart';
 import 'package:zytranow/controllers/carousel_provider.dart';
 import 'package:zytranow/controllers/location_provider.dart';
+import 'package:zytranow/controllers/user_provider.dart';
 import 'package:zytranow/controllers/category_products_provider.dart';
 import 'package:zytranow/controllers/cart_provider.dart';
 import 'package:zytranow/view/screens/splash/splash_screen.dart';
@@ -40,6 +41,7 @@ final List<SingleChildWidget> _appProviders = [
   ChangeNotifierProvider(create: (_) => AuthProvider()),
   ChangeNotifierProvider(create: (_) => CarouselProvider()),
   ChangeNotifierProvider(create: (_) => LocationProvider()),
+  ChangeNotifierProvider(create: (_) => UserProvider()),
 ];
 
 class ZytraApp extends StatelessWidget {
