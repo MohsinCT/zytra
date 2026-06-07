@@ -33,37 +33,17 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
 
   Future<void> _handleUseCurrentLocation(BuildContext context) async {
     final locationProvider = context.read<LocationProvider>();
-    final userAddress = await locationProvider.fetchLiveLocationForMap();
+    // For frontend-only prototype use the mock method to simulate current location.
+    final userAddress = await locationProvider.mockUseCurrentLocation();
 
     if (!context.mounted) return;
 
-    if (userAddress != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              MapConfirmationScreen(initialAddress: userAddress),
-        ),
-      );
-      return;
-    }
-
-    // fetchLiveLocationForMap returned null — inspect why and react.
-    if (locationProvider.isPermanentlyDenied) {
-      _showPermanentlyDeniedDialog(context, locationProvider);
-    } else if (locationProvider.isServiceDisabled) {
-      _showServiceDisabledDialog(context, locationProvider);
-    } else if (locationProvider.errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(locationProvider.errorMessage!),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          backgroundColor: Colors.black87,
-        ),
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapConfirmationScreen(initialAddress: userAddress),
+      ),
+    );
   }
 
   // ── Error dialogs ─────────────────────────────────────────────────────────
@@ -312,7 +292,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen> {
   Widget _buildAddNewAddressTile() {
     return InkWell(
       onTap: () {
-        // TODO: Implement manual address entry / Places search.
+        Navigator.pushNamed(context, '/map-picker');
       },
       borderRadius: BorderRadius.circular(kRadiusMD),
       child: Container(

@@ -175,9 +175,8 @@ class _MapConfirmationScreenState extends State<MapConfirmationScreen> {
   // ── Confirm ───────────────────────────────────────────────────────────────
 
   void _onConfirmPressed() {
-    context.read<LocationProvider>().saveConfirmedLocation(_currentAddress);
-    // Pop all the way back to the first route (home screen).
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    // Navigate to address details screen to collect receiver info before saving.
+    Navigator.pushNamed(context, '/address-details', arguments: _currentAddress);
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────

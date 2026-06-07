@@ -1,9 +1,14 @@
 import 'package:flutter/foundation.dart';
 
 class UserProvider extends ChangeNotifier {
-  // Mock phone number (frontend-only) - no persistence.
-  String phoneNumber = '7994058834';
+  // Frontend-only user state. No backend persistence in this task.
+  String phoneNumber = '';
   String? fullName;
+
+  void setPhoneNumber(String phone) {
+    phoneNumber = phone.trim();
+    notifyListeners();
+  }
 
   void setFullName(String name) {
     fullName = name.trim().isEmpty ? null : name.trim();

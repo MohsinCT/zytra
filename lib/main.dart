@@ -9,10 +9,14 @@ import 'package:zytranow/controllers/auth_provider.dart';
 import 'package:zytranow/controllers/carousel_provider.dart';
 import 'package:zytranow/controllers/location_provider.dart';
 import 'package:zytranow/controllers/user_provider.dart';
+import 'package:zytranow/controllers/theme_provider.dart';
+import 'package:zytranow/controllers/address_provider.dart';
 import 'package:zytranow/controllers/category_products_provider.dart';
 import 'package:zytranow/controllers/cart_provider.dart';
 import 'package:zytranow/view/screens/splash/splash_screen.dart';
 import 'package:zytranow/view/screens/categories/category_products_screen.dart';
+import 'package:zytranow/view/screens/location/map_picker_screen.dart';
+import 'package:zytranow/view/screens/location/address_details_screen.dart';
 
 // App entry contract (small):
 // - Input: platform device dimensions, OS text scale.
@@ -41,7 +45,9 @@ final List<SingleChildWidget> _appProviders = [
   ChangeNotifierProvider(create: (_) => AuthProvider()),
   ChangeNotifierProvider(create: (_) => CarouselProvider()),
   ChangeNotifierProvider(create: (_) => LocationProvider()),
+  ChangeNotifierProvider(create: (_) => ThemeProvider()),
   ChangeNotifierProvider(create: (_) => UserProvider()),
+  ChangeNotifierProvider(create: (_) => AddressProvider()),
 ];
 
 class ZytraApp extends StatelessWidget {
@@ -104,6 +110,9 @@ class ZytraApp extends StatelessWidget {
           final args = ModalRoute.of(ctx)!.settings.arguments as String? ?? 'Cleaning Essentials';
           return CategoryProductsScreen(categoryName: args);
         }
+        ,
+        '/map-picker': (ctx) => const MapPickerScreen(),
+        '/address-details': (ctx) => const AddressDetailsScreen(),
       },
     );
   }

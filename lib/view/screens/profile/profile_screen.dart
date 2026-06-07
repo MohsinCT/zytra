@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zytranow/controllers/home_provider.dart';
+import 'package:zytranow/controllers/theme_provider.dart';
 // auth_provider not required here; user info is handled by UserProvider
 import 'package:zytranow/controllers/user_provider.dart';
 
@@ -10,7 +11,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5), // Light grey background
+      backgroundColor: Colors.white, // Zytra white background
       body: CustomScrollView(
         slivers: [
           _buildDarkHeader(context),
@@ -30,22 +31,10 @@ class ProfileScreen extends StatelessWidget {
                   _buildSectionTitle("YOUR INFORMATION"),
                   const SizedBox(height: 12),
                   _buildInfoList([
-                    _ListItem("Your orders", Icons.receipt_long_outlined),
-                    _ListItem("Your wishlist", Icons.favorite_border),
+                    _ListItem("Your Orders", Icons.receipt_long_outlined),
+                    _ListItem("Your Wishlist", Icons.favorite_border),
+                    _ListItem("Saved Addresses", Icons.location_on_outlined),
                     _ListItem("Bookmarked Items", Icons.bookmark_border),
-                    _ListItem("Your prescriptions", Icons.medical_services_outlined),
-                    _ListItem("Address book", Icons.contact_page_outlined),
-                    _ListItem("GST details", Icons.description_outlined),
-                    _ListItem("E-gift cards", Icons.card_giftcard),
-                  ]),
-                  const SizedBox(height: 32),
-                  _buildSectionTitle("PAYMENTS & COUPONS"),
-                  const SizedBox(height: 12),
-                  _buildInfoList([
-                    _ListItem("Payment settings", Icons.payment_outlined),
-                    _ListItem("ZYTRA Wallet", Icons.account_balance_wallet_outlined),
-                    _ListItem("Claim Gift Card", Icons.card_giftcard),
-                    _ListItem("Your collected rewards", Icons.percent_outlined),
                   ]),
                   const SizedBox(height: 32),
                   _buildSectionTitle("OTHER INFORMATION"),
@@ -113,24 +102,19 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Consumer<UserProvider>(
               builder: (context, user, _) {
-                final displayName = user.fullName ?? 'Add your name';
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      displayName,
-                      style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                    const Text(
+                      'Your Account',
+                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
                         const Icon(Icons.phone_outlined, color: Colors.white70, size: 16),
-                        const SizedBox(width: 4),
-                        Text("+91-${user.phoneNumber}", style: const TextStyle(color: Colors.white70, fontSize: 13)),
-                        const SizedBox(width: 20),
-                        const Icon(Icons.cake_outlined, color: Colors.white70, size: 16),
-                        const SizedBox(width: 4),
-                        const Text("26 Oct 2004", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                        const SizedBox(width: 8),
+                        Text('+91-${user.phoneNumber}', style: const TextStyle(color: Colors.white70, fontSize: 13)),
                       ],
                     ),
                   ],
@@ -186,40 +170,44 @@ class ProfileScreen extends StatelessWidget {
         onTap: () => _showAddNameSheet(context, user.fullName),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF5A95), Color(0xFFFF2D6F)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [BoxShadow(color: Colors.pink.withOpacity(0.16), blurRadius: 12, offset: Offset(0, 6))],
           ),
           child: Row(
             children: [
               CircleAvatar(
-                radius: 26,
-                backgroundColor: Colors.pink.shade50,
+                radius: 28,
+                backgroundColor: Colors.white24,
                 child: Text(
-                  hasName ? user.fullName!.substring(0, 1).toUpperCase() : 'A',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.pink),
+                  hasName ? user.fullName!.substring(0, 1).toUpperCase() : 'Z',
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      hasName ? user.fullName! : 'Add your name',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      hasName ? 'Welcome, ${user.fullName!}' : 'Add your name',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      hasName ? 'Complete your account details' : 'Tap to add your full name',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Complete your account details',
+                      style: TextStyle(fontSize: 13, color: Colors.white70),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.edit, color: Colors.grey.shade400),
+              const Icon(Icons.chevron_right, color: Colors.white70),
             ],
           ),
         ),
@@ -318,31 +306,37 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           Divider(height: 1, color: Colors.grey.shade100, indent: 50),
-          _buildSettingsTile(
-            icon: Icons.dark_mode_outlined,
-            title: "Appearance",
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
+          Consumer<ThemeProvider>(builder: (ctx, theme, _) {
+            return _buildSettingsTile(
+              icon: Icons.dark_mode_outlined,
+              title: "Appearance",
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: theme.mode,
+                    items: const [
+                      DropdownMenuItem(value: 'light', child: Text('Light')),
+                      DropdownMenuItem(value: 'dark', child: Text('Dark')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) theme.setMode(v);
+                    },
+                  ),
+                ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text("Dark", style: TextStyle(fontSize: 12, color: Colors.black87)),
-                  SizedBox(width: 4),
-                  Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.black54),
-                ],
-              ),
-            ),
-          ),
+            );
+          }),
           Divider(height: 1, color: Colors.grey.shade100, indent: 50),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const Icon(Icons.visibility_off_outlined, color: Colors.green, size: 24),
+                const Icon(Icons.visibility_off_outlined, color: Colors.black87, size: 24),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -358,7 +352,7 @@ class ProfileScreen extends StatelessWidget {
                   value: provider.isSensitiveHidden,
                   onChanged: provider.toggleSensitiveItems,
                   activeColor: Colors.white,
-                  activeTrackColor: Colors.black87,
+                  activeTrackColor: Colors.pink.shade400,
                   inactiveTrackColor: Colors.grey.shade300,
                   inactiveThumbColor: Colors.white,
                 ),

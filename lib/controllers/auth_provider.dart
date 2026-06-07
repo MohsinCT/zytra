@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:zytranow/view/screens/auth/otp_screen.dart';
 import 'package:zytranow/view/screens/main_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:zytranow/controllers/user_provider.dart';
 
 class AuthProvider extends ChangeNotifier {
   String? phoneNumber;
@@ -76,6 +78,14 @@ class AuthProvider extends ChangeNotifier {
       
       isVerifying = false;
       notifyListeners();
+
+      // Persist phone into UserProvider for UI usage (no backend persistence)
+      try {
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.setPhoneNumber(phoneNumber ?? '');
+      } catch (_) {
+        // If UserProvider is not available for some reason, ignore silently.
+      }
 
       Navigator.pushAndRemoveUntil(
         context,

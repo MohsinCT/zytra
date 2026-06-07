@@ -198,6 +198,23 @@ class LocationProvider extends ChangeNotifier {
     return _fail();
   }
 
+  /// Frontend-only mock for 'Use Current Location' when GPS / APIs are not used.
+  /// Returns a deterministic mock address and updates saved address state.
+  Future<UserAddress> mockUseCurrentLocation() async {
+    // Simulate a small delay as if fetching GPS
+    await Future.delayed(const Duration(milliseconds: 400));
+    final mock = UserAddress(
+      title: 'Current Location',
+      fullAddress: 'Poovattuparamba, Kozhikode, Kerala',
+      locality: 'Poovattuparamba',
+      lat: 11.2858,
+      lng: 75.7860,
+    );
+    // Update saved address immediately
+    await saveConfirmedLocation(mock);
+    return mock;
+  }
+
   /// Reverse geocodes a [lat]/[lng] pair — called when the map camera settles
   /// after a drag. Does NOT touch [_isLoading] at the provider level to avoid
   /// triggering a full-screen rebuild; the screen manages its own geocoding state.
