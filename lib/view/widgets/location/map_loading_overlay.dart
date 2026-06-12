@@ -6,7 +6,7 @@ import 'package:zytranow/core/constants/app_constants.dart';
 ///
 /// Renders above the map using a [Stack] so the map itself still loads
 /// underneath and the overlay fades away cleanly once ready.
-class MapLoadingOverlay extends StatefulWidget {
+class MapLoadingOverlay extends StatelessWidget {
   /// Message displayed below the spinner.
   final String message;
 
@@ -16,35 +16,9 @@ class MapLoadingOverlay extends StatefulWidget {
   });
 
   @override
-  State<MapLoadingOverlay> createState() => _MapLoadingOverlayState();
-}
-
-class _MapLoadingOverlayState extends State<MapLoadingOverlay>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final scaleNotifier = ValueNotifier<double>(1.1);
+
     return Container(
       color: Colors.white.withValues(alpha: 0.92),
       child: Center(
@@ -52,28 +26,43 @@ class _MapLoadingOverlayState extends State<MapLoadingOverlay>
           mainAxisSize: MainAxisSize.min,
           children: [
             // Pulsing Zytra icon
-            ScaleTransition(
-              scale: _pulseAnimation,
-              child: Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: kPrimaryPinkFaint,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: kPrimaryPink.withValues(alpha: 0.25),
-                      blurRadius: 24,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.shopping_bag_rounded,
-                  color: kPrimaryPink,
-                  size: 34,
-                ),
-              ),
+            ValueListenableBuilder<double>(
+              valueListenable: scaleNotifier,
+              builder: (context, scaleVal, child) {
+                return TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: scaleVal == 1.1 ? 0.9 : 1.1, end: scaleVal),
+                  duration: const Duration(milliseconds: 1200),
+                  curve: Curves.easeInOut,
+                  onEnd: () {
+                    scaleNotifier.value = scaleVal == 1.1 ? 0.9 : 1.1;
+                  },
+                  builder: (context, val, child) {
+                    return Transform.scale(
+                      scale: val,
+                      child: Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: kPrimaryPinkFaint,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: kPrimaryPink.withValues(alpha: 0.25),
+                              blurRadius: 24,
+                              spreadRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.shopping_bag_rounded,
+                          color: kPrimaryPink,
+                          size: 34,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
             const SizedBox(height: kSpacingLG),
 
@@ -90,7 +79,7 @@ class _MapLoadingOverlayState extends State<MapLoadingOverlay>
 
             // Message
             Text(
-              widget.message,
+              message,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

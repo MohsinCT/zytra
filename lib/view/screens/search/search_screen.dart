@@ -2,195 +2,154 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zytranow/models/product.dart';
-import 'package:zytranow/services/product_service.dart';
 import 'package:zytranow/core/utils/responsive.dart';
 import 'package:zytranow/view/screens/home/widgets/shimmer_loader.dart';
-
 import 'package:zytranow/controllers/cart_provider.dart';
+import 'package:zytranow/controllers/search_provider.dart';
+import 'package:zytranow/controllers/product_details_provider.dart';
 import 'package:zytranow/view/screens/categories/product_details_screen.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends StatelessWidget {
   final String? category;
 
   const SearchScreen({super.key, this.category});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
-}
-
-class _SearchScreenState extends State<SearchScreen> {
-  String _query = '';
-  late TextEditingController _controller;
-  List<Product> _results = [];
-  bool _isSearching = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  /// Queries the API or local cache asynchronously with race-condition mitigation.
-  Future<void> _performSearch(String query) async {
-    setState(() {
-      _query = query;
-    });
-
-    if (query.isEmpty) {
-      setState(() {
-        _results = [];
-        _isSearching = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isSearching = true;
-    });
-
-    final searchResults = await ProductService.searchProducts(query, category: widget.category);
-
-    if (_query == query && mounted) {
-      setState(() {
-        _results = searchResults;
-        _isSearching = false;
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final results = _results;
     final resp = Responsive.of(context);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5), // Light background
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.06),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                 child: TextField(
-                  controller: _controller,
-                  autofocus: true,
-                  onChanged: _performSearch,
-                  decoration: InputDecoration(
-                    hintText: widget.category != null 
-                        ? "Search in ${widget.category}..." 
-                        : "What do you need?",
-                    hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 8, right: 8),
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.black54),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                    prefixIconConstraints: const BoxConstraints(minWidth: 40),
-                    suffixIcon: _query.isNotEmpty 
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.black54),
-                            onPressed: () {
-                              _controller.clear();
-                              _performSearch('');
-                            },
-                          )
-                        : Padding(
-                            padding: const EdgeInsets.all(6.0),
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFFF2D6F),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.search, color: Colors.white, size: 20),
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 10),
-            
-            Expanded(
-              child: _query.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.search, size: 60, color: Colors.grey.shade300),
-                          const SizedBox(height: 16),
-                          Text(
-                            widget.category != null 
-                                ? "Search within ${widget.category}" 
-                                : "Search across all categories",
-                            style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+    return ChangeNotifierProvider(
+      create: (_) => SearchProvider(),
+      child: Consumer<SearchProvider>(
+        builder: (context, searchProvider, child) {
+          final results = searchProvider.results;
+          final query = searchProvider.query;
+          final isSearching = searchProvider.isSearching;
+
+          return Scaffold(
+            backgroundColor: const Color(0xFFF5F5F5), // Light background
+            body: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Search Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withValues(alpha: 0.06),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
                           ),
                         ],
+                        border: Border.all(color: Colors.grey.shade200),
                       ),
-                    )
-                  : _isSearching
-                      ? GridView.builder(
-                          padding: EdgeInsets.symmetric(horizontal: resp.scale(12), vertical: resp.scale(10)),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: resp.gridColumns,
-                            mainAxisSpacing: resp.scale(12),
-                            crossAxisSpacing: resp.scale(12),
-                            childAspectRatio: resp.isDesktop ? 0.75 : 0.66,
-                          ),
-                          itemCount: 6,
-                          itemBuilder: (context, index) {
-                            return ShimmerLoader(
-                              width: double.infinity,
-                              height: resp.productImageHeight + 110,
-                              borderRadius: 12,
-                            );
-                          },
-                        )
-                      : results.isEmpty
-                          ? Center(
-                              child: Text("No products found for '$_query'", style: TextStyle(color: Colors.grey.shade600)),
-                            )
-                          : GridView.builder(
-                              padding: EdgeInsets.symmetric(horizontal: resp.scale(12), vertical: resp.scale(10)),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: resp.gridColumns,
-                                mainAxisSpacing: resp.scale(12),
-                                crossAxisSpacing: resp.scale(12),
-                                childAspectRatio: resp.isDesktop ? 0.75 : 0.66,
-                              ),
-                              itemCount: results.length,
-                              itemBuilder: (context, index) {
-                                final p = results[index];
-                                return _SearchProductCard(product: p, imageHeight: resp.productImageHeight);
-                              },
+                      child: TextField(
+                        controller: searchProvider.controller,
+                        autofocus: true,
+                        onChanged: (text) => searchProvider.performSearch(text, category: category),
+                        decoration: InputDecoration(
+                          hintText: category != null 
+                              ? "Search in $category..." 
+                              : "What do you need?",
+                          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 8, right: 8),
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.black54),
+                              onPressed: () => Navigator.pop(context),
                             ),
+                          ),
+                          prefixIconConstraints: const BoxConstraints(minWidth: 40),
+                          suffixIcon: query.isNotEmpty 
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, color: Colors.black54),
+                                  onPressed: () {
+                                    searchProvider.clearSearch();
+                                  },
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.all(6.0),
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFFF2D6F),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.search, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 10),
+                  
+                  Expanded(
+                    child: query.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.search, size: 60, color: Colors.grey.shade300),
+                                const SizedBox(height: 16),
+                                Text(
+                                  category != null 
+                                      ? "Search within $category" 
+                                      : "Search across all categories",
+                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                                ),
+                              ],
+                            ),
+                          )
+                        : isSearching
+                            ? GridView.builder(
+                                padding: EdgeInsets.symmetric(horizontal: resp.scale(12), vertical: resp.scale(10)),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: resp.gridColumns,
+                                  mainAxisSpacing: resp.scale(12),
+                                  crossAxisSpacing: resp.scale(12),
+                                  childAspectRatio: resp.isDesktop ? 0.75 : 0.56,
+                                ),
+                                itemCount: 6,
+                                itemBuilder: (context, index) {
+                                  return ShimmerLoader(
+                                    width: double.infinity,
+                                    height: resp.productImageHeight + 110,
+                                    borderRadius: 12,
+                                  );
+                                },
+                              )
+                            : results.isEmpty
+                                ? Center(
+                                    child: Text("No products found for '$query'", style: TextStyle(color: Colors.grey.shade600)),
+                                  )
+                                : GridView.builder(
+                                    padding: EdgeInsets.symmetric(horizontal: resp.scale(12), vertical: resp.scale(10)),
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: resp.gridColumns,
+                                      mainAxisSpacing: resp.scale(12),
+                                      crossAxisSpacing: resp.scale(12),
+                                      childAspectRatio: resp.isDesktop ? 0.75 : 0.56,
+                                    ),
+                                    itemCount: results.length,
+                                    itemBuilder: (context, index) {
+                                      final p = results[index];
+                                      return _SearchProductCard(product: p, imageHeight: resp.productImageHeight);
+                                    },
+                                  ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -218,7 +177,10 @@ class _SearchProductCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProductDetailsScreen(product: product),
+              builder: (context) => ChangeNotifierProvider(
+                create: (_) => ProductDetailsProvider(product),
+                child: ProductDetailsScreen(product: product),
+              ),
             ),
           );
         },
@@ -227,71 +189,70 @@ class _SearchProductCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image + wishlist
-              Stack(
-                children: [
-                  Container(
-                    height: imageHeight,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(10),
+              // Image + wishlist (Expanded to consume leftover space)
+              Expanded(
+                child: Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: product.imageAsset.isNotEmpty
+                          ? Hero(
+                              tag: 'product_image_${product.id}',
+                              child: product.imageAsset.startsWith('http')
+                                  ? CachedNetworkImage(
+                                      imageUrl: product.imageAsset,
+                                      fit: BoxFit.contain,
+                                      placeholder: (context, url) => const ShimmerLoader(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        borderRadius: 10,
+                                      ),
+                                      errorWidget: (context, url, error) => const Icon(
+                                        Icons.image_not_supported,
+                                        size: 30,
+                                        color: Colors.grey,
+                                      ),
+                                    )
+                                  : Image.asset(
+                                      product.imageAsset,
+                                      fit: BoxFit.contain,
+                                    ),
+                            )
+                          : const SizedBox.shrink(),
                     ),
-                    alignment: Alignment.center,
-                    child: product.imageAsset.isNotEmpty
-                        ? Hero(
-                            tag: 'product_image_${product.id}',
-                            child: product.imageAsset.startsWith('http')
-                                ? CachedNetworkImage(
-                                    imageUrl: product.imageAsset,
-                                    width: resp.scale(90),
-                                    height: resp.scale(90),
-                                    fit: BoxFit.contain,
-                                    placeholder: (context, url) => const ShimmerLoader(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      borderRadius: 10,
-                                    ),
-                                    errorWidget: (context, url, error) => const Icon(
-                                      Icons.image_not_supported,
-                                      size: 30,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                                : Image.asset(
-                                    product.imageAsset,
-                                    width: resp.scale(90),
-                                    height: resp.scale(90),
-                                    fit: BoxFit.contain,
-                                  ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  Positioned(
-                    right: 6,
-                    top: 6,
-                    child: Consumer<CartProvider>(
-                      builder: (context, cart, child) {
-                        final isFav = cart.isWishlisted(product.id);
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: IconButton(
-                            onPressed: () {
-                              cart.toggleWishlist(product.id);
-                            },
-                            icon: Icon(
-                              isFav ? Icons.favorite : Icons.favorite_border,
-                              color: isFav ? const Color(0xFFFF2D6F) : Colors.black87,
-                              size: 18,
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Consumer<CartProvider>(
+                        builder: (context, cart, child) {
+                          final isFav = cart.isWishlisted(product.id);
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                          ),
-                        );
-                      },
+                            child: IconButton(
+                              onPressed: () {
+                                cart.toggleWishlist(product.id);
+                              },
+                              icon: Icon(
+                                isFav ? Icons.favorite : Icons.favorite_border,
+                                color: isFav ? const Color(0xFFFF2D6F) : Colors.black87,
+                                size: 18,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               SizedBox(height: resp.scale(8)),
               Text(product.unit, style: TextStyle(color: Colors.grey[600], fontSize: resp.scale(12))),
@@ -314,7 +275,7 @@ class _SearchProductCard extends StatelessWidget {
                     child: Text(t, style: TextStyle(fontSize: resp.scale(11), color: Colors.pink)),
                   )).toList(),
                 ),
-              const Spacer(),
+              SizedBox(height: resp.scale(8)),
               // bottom row: price + add
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

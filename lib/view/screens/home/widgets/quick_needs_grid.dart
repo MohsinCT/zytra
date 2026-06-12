@@ -36,7 +36,7 @@ class QuickNeedsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3, // Always 2 cards per row as requested
+        crossAxisCount: 3, // Always 3 cards per row
         mainAxisSpacing: 20,
         crossAxisSpacing: 16,
         childAspectRatio: 0.85, // Perfect ratio for top image + bottom text
@@ -66,164 +66,129 @@ class QuickNeedsGrid extends StatelessWidget {
   }
 }
 
-// Stateful card widget to handle the tap scale bounce animations locally
-class _QuickNeedCard extends StatefulWidget {
+// Private stateless card widget to handle the tap scale bounce animations locally
+class _QuickNeedCard extends StatelessWidget {
   final Category category;
   final String imageUrl;
 
   const _QuickNeedCard({required this.category, required this.imageUrl});
 
   @override
-  State<_QuickNeedCard> createState() => _QuickNeedCardState();
-}
-
-class _QuickNeedCardState extends State<_QuickNeedCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(TapDownDetails details) {
-    _controller.forward();
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    _controller.reverse();
-    Navigator.of(
-      context,
-    ).pushNamed('/category', arguments: widget.category.name);
-  }
-
-  void _onTapCancel() {
-    _controller.reverse();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(
-                0xFFFF2D7A,
-              ).withOpacity(0.06), // Soft pink shadow
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+    final isPressedNotifier = ValueNotifier<bool>(false);
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: isPressedNotifier,
+      builder: (context, isPressed, child) {
+        return AnimatedScale(
+          scale: isPressed ? 0.95 : 1.0,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOut,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF2D7A).withValues(alpha: 0.06), // Soft pink shadow
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+              border: Border.all(
+                color: const Color(0xFFFF2D7A).withValues(alpha: 0.08), // Elegant borders
+                width: 1.5,
+              ),
             ),
-          ],
-          border: Border.all(
-            color: const Color(0xFFFF2D7A).withOpacity(0.08), // Elegant borders
-            width: 1.5,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // 1. Soft feminine themed image/banner
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    20,
-                  ), // 20 radius rounded corner
-                  child: Stack(
-                    children: [
-                      // Pastel background gradient
-                      Positioned.fill(
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFFFFF0F5),
-                                Color(0xFFFFE4E1),
-                              ], // Lavender blush to Misty Rose
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 1. Soft feminine themed image/banner
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20), // 20 radius rounded corner
+                      child: Stack(
+                        children: [
+                          // Pastel background gradient
+                          Positioned.fill(
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFFFFF0F5),
+                                    Color(0xFFFFE4E1),
+                                  ], // Lavender blush to Misty Rose
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
 
-                      // Unsplash high-res category banner
-                      Positioned.fill(
-                        child: Hero(
-                          tag: 'quick_category_${widget.category.name}',
-                          child: CachedNetworkImage(
-                            imageUrl: widget.imageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const ShimmerLoader(
-                              width: double.infinity,
-                              height: double.infinity,
-                              borderRadius: 20,
-                            ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Icons.image_not_supported,
-                              color: Colors.grey,
+                          // Unsplash high-res category banner
+                          Positioned.fill(
+                            child: Hero(
+                              tag: 'quick_category_${category.name}',
+                              child: CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => const ShimmerLoader(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  borderRadius: 20,
+                                ),
+                                errorWidget: (context, url, error) => const Icon(
+                                  Icons.image_not_supported,
+                                  color: Colors.grey,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
 
-                      // Touch ink response overlay
-                      Positioned.fill(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: GestureDetector(
-                            onTapDown: _onTapDown,
-                            onTapUp: _onTapUp,
-                            onTapCancel: _onTapCancel,
-                            behavior: HitTestBehavior.opaque,
+                          // Touch ink response overlay
+                          Positioned.fill(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: GestureDetector(
+                                onTapDown: (_) => isPressedNotifier.value = true,
+                                onTapUp: (_) {
+                                  isPressedNotifier.value = false;
+                                  Navigator.of(context).pushNamed('/category', arguments: category.name);
+                                },
+                                onTapCancel: () => isPressedNotifier.value = false,
+                                behavior: HitTestBehavior.opaque,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
 
-            // 2. Category name centered below the image
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-              child: Text(
-                widget.category.name,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900, // Bold modern typography
-                  color: Colors.black87,
-                  letterSpacing: 0.3,
+                // 2. Category name centered below the image
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  child: Text(
+                    category.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900, // Bold modern typography
+                      color: Colors.black87,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

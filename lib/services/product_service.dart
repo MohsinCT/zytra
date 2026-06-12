@@ -74,7 +74,6 @@ class ProductService {
       final rating = 3.8 + (random.nextInt(12) / 10); // 3.8 to 5.0
       final reviews = 120 + random.nextInt(1800);
       final soldCountVal = 10 + random.nextInt(40); // 10k to 50k
-      final soldCount = "${soldCountVal}k+ sold last week";
 
       final images = _getImagesForSubcategory(subcategory, i, random);
       final specs = _getSpecsForSubcategory(subcategory);

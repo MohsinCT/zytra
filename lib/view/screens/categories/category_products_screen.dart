@@ -208,7 +208,11 @@ class CategoryProductsScreen extends StatelessWidget {
                 crossAxisCount: resp.gridColumns,
                 mainAxisSpacing: resp.scale(12),
                 crossAxisSpacing: resp.scale(12),
-                childAspectRatio: resp.isDesktop ? 0.75 : 0.66,
+                childAspectRatio: resp.isDesktop
+                    ? 0.75
+                    : resp.isTablet
+                        ? 0.65
+                        : 0.56,
               ),
               itemCount: products.length,
               itemBuilder: (context, index) {
@@ -364,71 +368,70 @@ class _ProductCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image + wishlist
-              Stack(
-                children: [
-                  Container(
-                    height: imageHeight,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(10),
+              // Image + wishlist (Expanded to consume leftover grid cell space dynamically)
+              Expanded(
+                child: Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: product.imageAsset.isNotEmpty
+                          ? Hero(
+                              tag: 'product_image_${product.id}',
+                              child: product.imageAsset.startsWith('http')
+                                  ? CachedNetworkImage(
+                                      imageUrl: product.imageAsset,
+                                      fit: BoxFit.contain,
+                                      placeholder: (context, url) => const ShimmerLoader(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        borderRadius: 10,
+                                      ),
+                                      errorWidget: (context, url, error) => const Icon(
+                                        Icons.image_not_supported,
+                                        size: 30,
+                                        color: Colors.grey,
+                                      ),
+                                    )
+                                  : Image.asset(
+                                      product.imageAsset,
+                                      fit: BoxFit.contain,
+                                    ),
+                            )
+                          : const SizedBox.shrink(),
                     ),
-                    alignment: Alignment.center,
-                    child: product.imageAsset.isNotEmpty
-                        ? Hero(
-                            tag: 'product_image_${product.id}',
-                            child: product.imageAsset.startsWith('http')
-                                ? CachedNetworkImage(
-                                    imageUrl: product.imageAsset,
-                                    width: resp.scale(90),
-                                    height: resp.scale(90),
-                                    fit: BoxFit.contain,
-                                    placeholder: (context, url) => const ShimmerLoader(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      borderRadius: 10,
-                                    ),
-                                    errorWidget: (context, url, error) => const Icon(
-                                      Icons.image_not_supported,
-                                      size: 30,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                                : Image.asset(
-                                    product.imageAsset,
-                                    width: resp.scale(90),
-                                    height: resp.scale(90),
-                                    fit: BoxFit.contain,
-                                  ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  Positioned(
-                    right: 6,
-                    top: 6,
-                    child: Consumer<CartProvider>(
-                      builder: (context, cart, child) {
-                        final isFav = cart.isWishlisted(product.id);
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: IconButton(
-                            onPressed: () {
-                              cart.toggleWishlist(product.id);
-                            },
-                            icon: Icon(
-                              isFav ? Icons.favorite : Icons.favorite_border,
-                              color: isFav ? const Color(0xFFFF2D6F) : Colors.black87,
-                              size: 18,
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Consumer<CartProvider>(
+                        builder: (context, cart, child) {
+                          final isFav = cart.isWishlisted(product.id);
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                          ),
-                        );
-                      },
+                            child: IconButton(
+                              onPressed: () {
+                                cart.toggleWishlist(product.id);
+                              },
+                              icon: Icon(
+                                isFav ? Icons.favorite : Icons.favorite_border,
+                                color: isFav ? const Color(0xFFFF2D6F) : Colors.black87,
+                                size: 18,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               SizedBox(height: resp.scale(8)),
               Text(
@@ -479,7 +482,7 @@ class _ProductCard extends StatelessWidget {
                       )
                       .toList(),
                 ),
-              const Spacer(),
+              SizedBox(height: resp.scale(8)),
               // bottom row: price + add
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

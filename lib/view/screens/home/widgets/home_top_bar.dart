@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zytranow/controllers/location_provider.dart';
+import 'package:zytranow/controllers/address_provider.dart';
 import 'package:zytranow/view/screens/profile/profile_screen.dart';
 import 'package:zytranow/view/screens/location/select_location_screen.dart';
+import 'package:zytranow/core/constants/app_constants.dart';
 
 class HomeTopBar extends StatelessWidget {
   const HomeTopBar({super.key});
@@ -28,7 +30,7 @@ class HomeTopBar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFFFF2D6F),
+                        color: kPrimaryPink,
                         letterSpacing: -1.0,
                       ),
                     ),
@@ -38,14 +40,24 @@ class HomeTopBar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black87,
+                        color: kTextDark,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Consumer<LocationProvider>(
-                  builder: (context, locationProvider, child) {
+                Consumer2<LocationProvider, AddressProvider>(
+                  builder: (context, locationProvider, addressProvider, child) {
+                    final activeAddress = addressProvider.activeAddress;
+                    final savedLoc = locationProvider.savedAddress;
+
+                    String displayText = 'Select Location';
+                    if (activeAddress != null) {
+                      displayText = '📍 ${activeAddress.address.locality}';
+                    } else if (savedLoc != null) {
+                      displayText = '📍 ${savedLoc.locality}';
+                    }
+
                     return GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -57,12 +69,14 @@ class HomeTopBar extends StatelessWidget {
                       },
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.location_on,
-                            color: Colors.black87,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
+                          if (displayText == 'Select Location') ...[
+                            const Icon(
+                              Icons.location_on,
+                              color: kTextDark,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
                           if (locationProvider.isLoading)
                             Container(
                               width: 80,
@@ -74,16 +88,16 @@ class HomeTopBar extends StatelessWidget {
                             )
                           else
                             Text(
-                              locationProvider.currentLocation,
+                              displayText,
                               style: const TextStyle(
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: Colors.black87,
+                                color: kTextDark,
                               ),
                             ),
                           const Icon(
                             Icons.keyboard_arrow_down,
-                            color: Colors.black87,
+                            color: kTextDark,
                             size: 18,
                           ),
                         ],
@@ -115,7 +129,7 @@ class HomeTopBar extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.person_outline,
-                color: Colors.black87,
+                color: kTextDark,
                 size: 22,
               ),
             ),

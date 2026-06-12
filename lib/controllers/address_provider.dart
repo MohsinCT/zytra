@@ -1,20 +1,23 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zytranow/models/address_entry.dart';
 import 'package:zytranow/models/user_address.dart';
 
 class AddressProvider extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
   final List<AddressEntry> _addresses = [];
   String? _activeAddressId;
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Keys for SharedPreferences
+  static const _kAddressesKey = 'local_addresses';
+  static const _kActiveIdKey = 'local_active_address_id';
+
   List<AddressEntry> get addresses => List.unmodifiable(_addresses);
+
   AddressEntry? get activeAddress {
     if (_activeAddressId == null) return _addresses.isNotEmpty ? _addresses.first : null;
     try {
@@ -37,28 +40,20 @@ class AddressProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        _isLoading = false;
-        notifyListeners();
-        return;
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_kAddressesKey);
+      if (jsonString != null && jsonString.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(jsonString);
+        _addresses.clear();
+        for (final item in decoded) {
+          _addresses.add(AddressEntry.fromJson(Map<String, dynamic>.from(item)));
+        }
       }
 
-      final snapshot = await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('addresses')
-          .orderBy('isDefault', descending: true)
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      _addresses.clear();
-      for (final doc in snapshot.docs) {
-        final entry = AddressEntry.fromJson({...doc.data(), 'id': doc.id, 'userId': user.uid});
-        _addresses.add(entry);
-        if (entry.isDefault) {
-          _activeAddressId = entry.id;
-        }
+      _activeAddressId = prefs.getString(_kActiveIdKey);
+      // If no active id and addresses exist, pick the first
+      if (_activeAddressId == null && _addresses.isNotEmpty) {
+        _activeAddressId = _addresses.first.id;
       }
     } catch (e) {
       debugPrint('[AddressProvider] Error loading addresses: $e');
@@ -69,7 +64,7 @@ class AddressProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addAddress({
+  Future<String> addAddress({
     required UserAddress address,
     required String receiverName,
     required String receiverNumber,
@@ -84,15 +79,12 @@ class AddressProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
       final id = const Uuid().v4();
       final now = DateTime.now();
 
       final entry = AddressEntry(
         id: id,
-        userId: user.uid,
+        userId: null,
         address: address,
         type: type,
         receiverName: receiverName,
@@ -105,51 +97,31 @@ class AddressProvider extends ChangeNotifier {
         createdAt: now,
       );
 
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('addresses')
-          .doc(id)
-          .set(entry.toJson());
-
       _addresses.insert(0, entry);
-      if (entry.isDefault) {
+
+      // If this is the first address, set it active.
+      if (_activeAddressId == null) {
         _activeAddressId = id;
       }
+
+      await _saveAll();
+      return id;
     } catch (e) {
       debugPrint('[AddressProvider] Error adding address: $e');
       _errorMessage = 'Failed to save address';
+      return '';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> setActive(String id) async {
     try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
-      final oldDefault = _addresses.cast<AddressEntry?>().firstWhere((a) => a?.isDefault ?? false, orElse: () => null);
-      if (oldDefault != null) {
-        await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .collection('addresses')
-            .doc(oldDefault.id)
-            .update({'isDefault': false});
-      }
-
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('addresses')
-          .doc(id)
-          .update({'isDefault': true});
-
+      if (!_addresses.any((a) => a.id == id)) return;
       _activeAddressId = id;
-      // Reload to ensure UI reflects correct state
-      await _loadAddresses();
+      await _saveAll();
+      notifyListeners();
     } catch (e) {
       debugPrint('[AddressProvider] Error setting active address: $e');
       _errorMessage = 'Failed to update default address';
@@ -159,20 +131,11 @@ class AddressProvider extends ChangeNotifier {
 
   Future<void> removeAddress(String id) async {
     try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('addresses')
-          .doc(id)
-          .delete();
-
       _addresses.removeWhere((a) => a.id == id);
       if (_activeAddressId == id) {
         _activeAddressId = _addresses.isNotEmpty ? _addresses.first.id : null;
       }
+      await _saveAll();
       notifyListeners();
     } catch (e) {
       debugPrint('[AddressProvider] Error removing address: $e');
@@ -181,9 +144,25 @@ class AddressProvider extends ChangeNotifier {
     }
   }
 
-  void clear() {
+  void clear() async {
     _addresses.clear();
     _activeAddressId = null;
+    await _saveAll();
     notifyListeners();
+  }
+
+  Future<void> _saveAll() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(_addresses.map((a) => a.toJson()).toList());
+      await prefs.setString(_kAddressesKey, encoded);
+      if (_activeAddressId != null) {
+        await prefs.setString(_kActiveIdKey, _activeAddressId!);
+      } else {
+        await prefs.remove(_kActiveIdKey);
+      }
+    } catch (e) {
+      debugPrint('[AddressProvider] Error saving addresses: $e');
+    }
   }
 }

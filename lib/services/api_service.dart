@@ -124,10 +124,6 @@ module.exports = router;
 class ApiConfig {
   /// Dynamic Base URL detection for seamless cross-device backend testing.
   static String get baseUrl {
-    // TIP FOR DEVELOPERS: Set this to your local machine's local network IP (e.g. 192.168.x.x)
-    // when deploying to a physical mobile phone testing via the same WiFi router network.
-    const String computerIp = '192.168.1.100'; 
-
     if (kIsWeb) {
       return 'http://localhost:5000/api';
     } else if (Platform.isAndroid) {

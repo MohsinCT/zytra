@@ -1,447 +1,504 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zytranow/controllers/location_provider.dart';
+import 'package:zytranow/controllers/address_provider.dart';
+import 'package:zytranow/controllers/user_provider.dart';
+import 'package:zytranow/controllers/select_location_provider.dart';
 import 'package:zytranow/core/constants/app_constants.dart';
-import 'package:zytranow/view/screens/location/map_confirmation_screen.dart';
-import 'package:zytranow/view/widgets/location/map_loading_overlay.dart';
+import 'package:zytranow/models/address_entry.dart';
+import 'package:zytranow/view/screens/location/map_picker_screen.dart';
 
-
-/// Location selection screen.
-///
-/// Improvements over the previous version:
-///   - Full-screen loading overlay while GPS fetch is in progress.
-///   - Actionable dialogs for permanently-denied permission and GPS-off states.
-///   - "Use Current Location" is fully disabled (not just visually) while loading.
-///   - Clean separation of error states via [LocationPermissionStatus] enum.
-class SelectLocationScreen extends StatefulWidget {
+class SelectLocationScreen extends StatelessWidget {
   const SelectLocationScreen({super.key});
-
-  @override
-  State<SelectLocationScreen> createState() => _SelectLocationScreenState();
-}
-
-class _SelectLocationScreenState extends State<SelectLocationScreen> {
-  final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  // ── Tap handler for "Use Current Location" ────────────────────────────────
 
   Future<void> _handleUseCurrentLocation(BuildContext context) async {
     final locationProvider = context.read<LocationProvider>();
-    // For frontend-only prototype use the mock method to simulate current location.
-    final userAddress = await locationProvider.mockUseCurrentLocation();
+    final addressProvider = context.read<AddressProvider>();
+    final userProvider = context.read<UserProvider>();
 
-    if (!context.mounted) return;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MapConfirmationScreen(initialAddress: userAddress),
-      ),
-    );
-  }
-
-  // ── Error dialogs ─────────────────────────────────────────────────────────
-
-  void _showPermanentlyDeniedDialog(
-    BuildContext context,
-    LocationProvider provider,
-  ) {
-    showDialog<void>(
+    // Show loading dialog
+    showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(kRadiusLG)),
-        icon: const Icon(Icons.location_off_rounded,
-            color: kPrimaryPink, size: 36),
-        title: const Text(
-          'Location Access Denied',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        content: const Text(
-          'Zytra needs location access to find stores near you.\n\n'
-          'Please tap "Open Settings" and enable Location for Zytra.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 14, height: 1.55, color: Colors.black54),
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
-                style: TextStyle(color: Colors.black45)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              provider.openAppSettings();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kPrimaryPink,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(kRadiusMD)),
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(kPrimaryPink)),
+                SizedBox(height: 16),
+                Text('Fetching Current Location...', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
             ),
-            child: const Text('Open Settings'),
           ),
-        ],
+        ),
       ),
     );
-  }
 
-  void _showServiceDisabledDialog(
-    BuildContext context,
-    LocationProvider provider,
-  ) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(kRadiusLG)),
-        icon: const Icon(Icons.gps_off_rounded, color: kPrimaryPink, size: 36),
-        title: const Text(
-          'GPS is Turned Off',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        content: const Text(
-          'Please enable Location Services on your device so Zytra can '
-          'find your delivery address.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 14, height: 1.55, color: Colors.black54),
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
-                style: TextStyle(color: Colors.black45)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              provider.openLocationSettings();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kPrimaryPink,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(kRadiusMD)),
-            ),
-            child: const Text('Enable GPS'),
-          ),
-        ],
-      ),
-    );
-  }
+    try {
+      final realAddress = await locationProvider.fetchLiveLocationForMap();
 
-  // ── Build ─────────────────────────────────────────────────────────────────
+      if (!context.mounted) return;
+      Navigator.pop(context); // Dismiss loading dialog
+
+      if (realAddress != null) {
+        // Save in LocationProvider
+        await locationProvider.saveConfirmedLocation(realAddress);
+
+        // Save in AddressProvider
+        final newId = await addressProvider.addAddress(
+          address: realAddress,
+          receiverName: userProvider.fullName ?? 'User',
+          receiverNumber: userProvider.phoneNumber,
+          type: AddressType.home,
+        );
+
+        await addressProvider.setActive(newId);
+
+        if (context.mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      } else {
+        // Show error message from provider
+        final errorMsg = locationProvider.errorMessage ?? 'Could not fetch your location. Please check your GPS and permissions.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Dismiss loader if still showing
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to fetch location: ${e.toString()}'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LocationProvider>(
-      builder: (context, provider, _) {
-        return Stack(
-          children: [
-            Scaffold(
+    return ChangeNotifierProvider(
+      create: (_) => SelectLocationProvider(),
+      child: Consumer<SelectLocationProvider>(
+        builder: (context, selectLocProvider, child) {
+          final suggestions = selectLocProvider.suggestions;
+
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
               backgroundColor: Colors.white,
-              appBar: AppBar(
-                backgroundColor: Colors.white,
-                elevation: 0,
-                surfaceTintColor: Colors.transparent,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black87),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                title: const Text(
-                  'Select your location',
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              elevation: 0,
+              surfaceTintColor: Colors.transparent,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: kTextDark),
+                onPressed: () => Navigator.pop(context),
               ),
-              body: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: kSpacingMD),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: kSpacingSM),
-
-                    // ── Search field ────────────────────────────────────────
-                    _buildSearchField(),
-                    const SizedBox(height: kSpacingLG),
-
-                    // ── Use Current Location ────────────────────────────────
-                    _buildCurrentLocationTile(context, provider),
-                    const SizedBox(height: kSpacingMD),
-
-                    // ── Add New Address ─────────────────────────────────────
-                    _buildAddNewAddressTile(),
-                    const SizedBox(height: kSpacingXL),
-
-                    // ── Saved Addresses ─────────────────────────────────────
-                    const Text(
-                      'Saved Addresses',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: kSpacingSM),
-                    _buildSavedAddresses(provider),
-                    const SizedBox(height: 40),
-                  ],
+              title: const Text(
+                'Select your location',
+                style: TextStyle(
+                  color: kTextDark,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-
-            // ── Full-screen loading overlay while fetching GPS ────────────
-            if (provider.isLoading)
-              const MapLoadingOverlay(message: 'Fetching your location…'),
-          ],
-        );
-      },
-    );
-  }
-
-  // ── Sub-widgets ───────────────────────────────────────────────────────────
-
-  Widget _buildSearchField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(kRadiusMD),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: TextField(
-        controller: _searchController,
-        decoration: const InputDecoration(
-          hintText: 'Search an area or address',
-          hintStyle: TextStyle(color: Colors.black45, fontSize: 14),
-          prefixIcon: Icon(Icons.search, color: Colors.black54),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 14),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCurrentLocationTile(
-    BuildContext context,
-    LocationProvider provider,
-  ) {
-    return InkWell(
-      // Disabled during any loading — absorbs taps completely.
-      onTap: provider.isLoading
-          ? null
-          : () => _handleUseCurrentLocation(context),
-      borderRadius: BorderRadius.circular(kRadiusMD),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            vertical: kSpacingMD, horizontal: kSpacingMD),
-        decoration: BoxDecoration(
-          color: kPrimaryPink.withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(kRadiusMD),
-          border: Border.all(color: kPrimaryPink.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.my_location, color: kPrimaryPink),
-            const SizedBox(width: 12),
-            Expanded(
+            body: SafeArea(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Use Current Location',
-                    style: TextStyle(
-                      color: kPrimaryPink,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: _buildSearchField(selectLocProvider),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Using GPS to detect your address',
-                    style: TextStyle(
-                      color: kPrimaryPink.withValues(alpha: 0.65),
-                      fontSize: 12,
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 12),
+                              // Use Current Location Card
+                              _buildCurrentLocationTile(context),
+                              const SizedBox(height: 14),
+                              // Add New Address Card
+                              _buildAddNewAddressTile(context),
+                              const SizedBox(height: 28),
+                              // Saved Addresses
+                              const Text(
+                                'Saved Addresses',
+                                style: TextStyle(
+                                  color: kTextDark,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSavedAddressesList(context),
+                              const SizedBox(height: 40),
+                            ],
+                          ),
+                        ),
+                        // Dropdown Suggestions overlay
+                        if (suggestions.isNotEmpty) _buildSuggestionsList(context, selectLocProvider),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: kPrimaryPink),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSearchField(SelectLocationProvider selectLocProvider) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: TextField(
+        controller: selectLocProvider.searchController,
+        style: const TextStyle(fontSize: 15, color: kTextDark, fontWeight: FontWeight.w500),
+        decoration: InputDecoration(
+          hintText: 'Search an area or address',
+          hintStyle: const TextStyle(color: kTextMuted, fontSize: 14),
+          prefixIcon: const Icon(Icons.search, color: kTextMuted),
+          suffixIcon: selectLocProvider.searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, color: kTextMuted, size: 18),
+                  onPressed: () => selectLocProvider.clearSearch(),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCurrentLocationTile(BuildContext context) {
+    return InkWell(
+      onTap: () => _handleUseCurrentLocation(context),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: kPrimaryPink.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: kPrimaryPink.withValues(alpha: 0.35), width: 1.5),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.my_location, color: kPrimaryPink, size: 22),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Use Current Location',
+                    style: TextStyle(
+                      color: kPrimaryPink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    'Using GPS to detect your address',
+                    style: TextStyle(
+                      color: kPrimaryPink,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: kPrimaryPink, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAddNewAddressTile() {
+  Widget _buildAddNewAddressTile(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(context, '/map-picker');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const MapPickerScreen(),
+          ),
+        );
       },
-      borderRadius: BorderRadius.circular(kRadiusMD),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(
-            vertical: kSpacingMD, horizontal: kSpacingMD),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(kRadiusMD),
-          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.015),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
         ),
-        child: Row(
+        child: const Row(
           children: [
-            const Icon(Icons.add, color: Colors.black87),
-            const SizedBox(width: 12),
-            const Expanded(
+            Icon(Icons.add, color: kPrimaryPink, size: 22),
+            SizedBox(width: 14),
+            Expanded(
               child: Text(
                 'Add New Address',
                 style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  color: kTextDark,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.black54),
+            Icon(Icons.chevron_right, color: kTextMuted, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSavedAddresses(LocationProvider provider) {
-    final saved = provider.savedAddress;
-    if (saved != null) {
-      return _buildSavedAddressCard(
-        title: saved.title.isNotEmpty ? saved.title : 'Home',
-        address: saved.fullAddress,
-        isSelected: true,
-      );
-    }
+  Widget _buildSuggestionsList(BuildContext context, SelectLocationProvider selectLocProvider) {
+    final suggestions = selectLocProvider.suggestions;
 
-    // Dummy placeholders when no address is saved yet.
-    return Column(
-      children: [
-        _buildSavedAddressCard(
-          title: 'Home',
-          address: '123 Main St, Apartment 4B, San Francisco, CA 94105',
-          isSelected: false,
+    return Positioned(
+      top: 0,
+      left: 16,
+      right: 16,
+      child: Container(
+        constraints: const BoxConstraints(maxHeight: 250),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            )
+          ],
         ),
-        const SizedBox(height: 12),
-        _buildSavedAddressCard(
-          title: 'Work',
-          address: '456 Market St, Suite 100, San Francisco, CA 94104',
-          isSelected: false,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: suggestions.length,
+          itemBuilder: (ctx, index) {
+            final suggestion = suggestions[index];
+            final selectedAddress = selectLocProvider.mockCoordinates[suggestion];
+            return ListTile(
+              leading: const Icon(Icons.location_on_outlined, color: kPrimaryPink),
+              title: Text(
+                suggestion,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: kTextDark),
+              ),
+              subtitle: Text(
+                selectedAddress?.fullAddress ?? '',
+                style: const TextStyle(fontSize: 12, color: kTextMuted),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MapPickerScreen(initialAddress: selectedAddress),
+                  ),
+                );
+              },
+            );
+          },
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildSavedAddressCard({
-    required String title,
-    required String address,
-    required bool isSelected,
-  }) {
-    final icon = title.toLowerCase() == 'home'
-        ? Icons.home
-        : title.toLowerCase() == 'work'
-            ? Icons.work
-            : Icons.location_on;
+  Widget _buildSavedAddressesList(BuildContext context) {
+    return Consumer<AddressProvider>(
+      builder: (context, addressProvider, _) {
+        final addresses = addressProvider.addresses;
+        final activeAddress = addressProvider.activeAddress;
 
-    return Container(
-      padding: const EdgeInsets.all(kSpacingMD),
-      decoration: BoxDecoration(
-        color: isSelected ? kPrimaryPink.withValues(alpha: 0.05) : Colors.white,
-        borderRadius: BorderRadius.circular(kRadiusMD),
-        border: Border.all(
-          color: isSelected ? kPrimaryPink : Colors.grey.shade200,
-          width: isSelected ? 1.5 : 1.0,
-        ),
-        boxShadow: isSelected
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? kPrimaryPink : Colors.black54,
-            size: 24,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    if (isSelected) ...[
-                      const SizedBox(width: kSpacingSM),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: kPrimaryPink,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'Selected',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+        if (addresses.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24.0),
+              child: Text(
+                'No saved addresses yet',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+              ),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: addresses.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final entry = addresses[index];
+            final isSelected = activeAddress?.id == entry.id;
+
+            IconData typeIcon = Icons.home;
+            if (entry.type == AddressType.office) {
+              typeIcon = Icons.work;
+            } else if (entry.type == AddressType.other) {
+              typeIcon = Icons.location_on;
+            }
+
+            return InkWell(
+              onTap: () async {
+                final locProvider = Provider.of<LocationProvider>(context, listen: false);
+                await addressProvider.setActive(entry.id);
+                await locProvider.saveConfirmedLocation(entry.address);
+
+                if (context.mounted) {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isSelected ? kPrimaryPink.withValues(alpha: 0.04) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected ? kPrimaryPink : Colors.grey.shade200,
+                    width: isSelected ? 1.5 : 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.01),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    )
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  address,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      typeIcon,
+                      color: isSelected ? kPrimaryPink : kTextMuted,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                entry.type == AddressType.home
+                                    ? 'Home'
+                                    : entry.type == AddressType.office
+                                        ? 'Office'
+                                        : 'Other',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: kTextDark,
+                                ),
+                              ),
+                              if (isSelected) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: kPrimaryPink,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'Selected',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            entry.address.fullAddress,
+                            style: const TextStyle(
+                              color: kTextDark,
+                              fontSize: 13,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Receiver: ${entry.receiverName} (${entry.receiverNumber})',
+                            style: const TextStyle(
+                              color: kTextMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: kTextMuted, size: 20),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: const Text('Delete address?', style: TextStyle(fontWeight: FontWeight.bold)),
+                            content: const Text('Are you sure you want to remove this saved address?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red.shade600,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  addressProvider.removeAddress(entry.id);
+                                },
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: kSpacingSM),
-          const Icon(Icons.more_vert, color: Colors.black45, size: 20),
-        ],
-      ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

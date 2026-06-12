@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 
 class UserProvider extends ChangeNotifier {
   // Frontend-only user state. No backend persistence in this task.
-  String phoneNumber = '';
+  String phoneNumber = '9876543210';
   String? fullName;
 
   void setPhoneNumber(String phone) {
-    phoneNumber = phone.trim();
+    phoneNumber = phone.trim().isEmpty ? '9876543210' : phone.trim();
     notifyListeners();
   }
 
