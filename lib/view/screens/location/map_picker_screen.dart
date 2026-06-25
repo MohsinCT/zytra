@@ -50,14 +50,20 @@ class MapPickerScreen extends StatelessWidget {
                   builder: (context, constraints) {
                     return GestureDetector(
                       onPanStart: (_) => provider.setDragging(true),
-                      onPanUpdate: (details) => provider.handleDrag(details.delta),
+                      onPanUpdate: (details) =>
+                          provider.handleDrag(details.delta),
                       onPanEnd: (_) => provider.onDragEnded(),
                       child: ClipRect(
                         child: Container(
                           width: double.infinity,
                           height: double.infinity,
                           color: const Color(0xFFE4E3DE),
-                          child: _buildMapGrid(context, provider, constraints.maxWidth, constraints.maxHeight),
+                          child: _buildMapGrid(
+                            context,
+                            provider,
+                            constraints.maxWidth,
+                            constraints.maxHeight,
+                          ),
                         ),
                       ),
                     );
@@ -76,7 +82,7 @@ class MapPickerScreen extends StatelessWidget {
                 _buildTopBar(context, provider),
 
                 // 4. Current Location Floating Button
-                _buildCurrentLocationFloatingButton(provider),
+                _buildCurrentLocationFloatingButton(context, provider),
 
                 // 5. Bottom Confirmation Card
                 _buildBottomConfirmationCard(context, provider),
@@ -88,12 +94,21 @@ class MapPickerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMapGrid(BuildContext context, MapPickerProvider provider, double width, double height) {
+  Widget _buildMapGrid(
+    BuildContext context,
+    MapPickerProvider provider,
+    double width,
+    double height,
+  ) {
     // Zoom level is fixed at 15
     const int zoom = 15;
-    final double centerXFractional = (provider.currentLng + 180.0) / 360.0 * 32768.0; // 2^15 = 32768
+    final double centerXFractional =
+        (provider.currentLng + 180.0) / 360.0 * 32768.0; // 2^15 = 32768
     final double latRad = provider.currentLat * 3.141592653589793 / 180.0;
-    final double centerYFractional = (1.0 - (log(tan(latRad) + 1.0 / cos(latRad)) / 3.141592653589793)) / 2.0 * 32768.0;
+    final double centerYFractional =
+        (1.0 - (log(tan(latRad) + 1.0 / cos(latRad)) / 3.141592653589793)) /
+        2.0 *
+        32768.0;
 
     final int centerTileX = centerXFractional.floor();
     final int centerTileY = centerYFractional.floor();
@@ -117,18 +132,31 @@ class MapPickerScreen extends StatelessWidget {
               imageUrl: 'https://tile.openstreetmap.org/$zoom/$tx/$ty.png',
               fit: BoxFit.fill,
               httpHeaders: const {
-                'User-Agent': 'ZytraApp/1.0.0 (flutter prototype; contact development)'
+                'User-Agent':
+                    'ZytraApp/1.0.0 (flutter prototype; contact development)',
               },
               placeholder: (context, url) => Container(
-                color: const Color(0xFFE4E3DE),
+                color: context.isDark
+                    ? const Color(0xFF1E1E1E)
+                    : const Color(0xFFE4E3DE),
                 child: Center(
-                  child: Icon(Icons.map_outlined, color: Colors.grey.shade400, size: 28),
+                  child: Icon(
+                    Icons.map_outlined,
+                    color: context.textMuted,
+                    size: 28,
+                  ),
                 ),
               ),
               errorWidget: (context, url, error) => Container(
-                color: const Color(0xFFE4E3DE),
+                color: context.isDark
+                    ? const Color(0xFF1E1E1E)
+                    : const Color(0xFFE4E3DE),
                 child: Center(
-                  child: Icon(Icons.broken_image_outlined, color: Colors.grey.shade400, size: 24),
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: context.textMuted,
+                    size: 24,
+                  ),
                 ),
               ),
             ),
@@ -161,7 +189,7 @@ class MapPickerScreen extends StatelessWidget {
                       color: kPrimaryPink.withValues(alpha: 0.35),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
-                    )
+                    ),
                   ],
                 ),
                 child: const Icon(
@@ -208,44 +236,68 @@ class MapPickerScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.cardBackground,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
+                        color: Colors.black.withValues(
+                          alpha: context.isDark ? 0.02 : 0.08,
+                        ),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
-                      )
+                      ),
                     ],
                   ),
-                  child: const Icon(Icons.arrow_back, color: kTextDark, size: 20),
+                  child: Icon(
+                    Icons.arrow_back,
+                    color: context.textDark,
+                    size: 20,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.cardBackground,
                     borderRadius: BorderRadius.circular(100),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
+                        color: Colors.black.withValues(
+                          alpha: context.isDark ? 0.02 : 0.08,
+                        ),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
-                      )
+                      ),
                     ],
                   ),
                   child: TextField(
                     controller: provider.searchController,
-                    style: const TextStyle(fontSize: 14, color: kTextDark, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: context.textDark,
+                      fontWeight: FontWeight.w500,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Search an area or address',
-                      hintStyle: const TextStyle(color: kTextMuted, fontSize: 13),
-                      prefixIcon: const Icon(Icons.search, color: kTextMuted, size: 20),
+                      hintStyle: TextStyle(
+                        color: context.textMuted,
+                        fontSize: 13,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: context.textMuted,
+                        size: 20,
+                      ),
                       suffixIcon: provider.searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, color: kTextMuted, size: 16),
-                              onPressed: () => provider.searchController.clear(),
+                              icon: Icon(
+                                Icons.clear,
+                                color: context.textMuted,
+                                size: 16,
+                              ),
+                              onPressed: () =>
+                                  provider.searchController.clear(),
                             )
                           : null,
                       border: InputBorder.none,
@@ -261,15 +313,17 @@ class MapPickerScreen extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(left: 48),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.cardBackground,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: context.borderTheme),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: Colors.black.withValues(
+                      alpha: context.isDark ? 0.02 : 0.08,
+                    ),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ],
               ),
               child: ListView.builder(
@@ -280,11 +334,21 @@ class MapPickerScreen extends StatelessWidget {
                   final suggestion = suggestions[index];
                   return ListTile(
                     dense: true,
-                    leading: const Icon(Icons.location_on_outlined, color: kPrimaryPink, size: 18),
-                    title: Text(suggestion, style: const TextStyle(fontWeight: FontWeight.bold, color: kTextDark)),
+                    leading: const Icon(
+                      Icons.location_on_outlined,
+                      color: kPrimaryPink,
+                      size: 18,
+                    ),
+                    title: Text(
+                      suggestion,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: context.textDark,
+                      ),
+                    ),
                     subtitle: Text(
                       provider.mockCoordinates[suggestion]?.fullAddress ?? '',
-                      style: const TextStyle(fontSize: 11, color: kTextMuted),
+                      style: TextStyle(fontSize: 11, color: context.textMuted),
                     ),
                     onTap: () => provider.onSuggestionSelected(suggestion),
                   );
@@ -297,7 +361,10 @@ class MapPickerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCurrentLocationFloatingButton(MapPickerProvider provider) {
+  Widget _buildCurrentLocationFloatingButton(
+    BuildContext context,
+    MapPickerProvider provider,
+  ) {
     return Positioned(
       bottom: 215,
       right: 16,
@@ -307,14 +374,16 @@ class MapPickerScreen extends StatelessWidget {
           width: 46,
           height: 46,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.cardBackground,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
+                color: Colors.black.withValues(
+                  alpha: context.isDark ? 0.03 : 0.12,
+                ),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: Center(
@@ -334,7 +403,10 @@ class MapPickerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomConfirmationCard(BuildContext context, MapPickerProvider provider) {
+  Widget _buildBottomConfirmationCard(
+    BuildContext context,
+    MapPickerProvider provider,
+  ) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -346,15 +418,17 @@ class MapPickerScreen extends StatelessWidget {
           18,
           MediaQuery.of(context).padding.bottom + 16,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: context.cardBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: Colors.black.withValues(
+                alpha: context.isDark ? 0.03 : 0.08,
+              ),
               blurRadius: 18,
-              offset: Offset(0, -5),
-            )
+              offset: const Offset(0, -5),
+            ),
           ],
         ),
         child: Column(
@@ -376,10 +450,10 @@ class MapPickerScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Order will be delivered here',
                   style: TextStyle(
-                    color: kTextMuted,
+                    color: context.textMuted,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.3,
@@ -390,15 +464,17 @@ class MapPickerScreen extends StatelessWidget {
             const SizedBox(height: 14),
             AnimatedCrossFade(
               duration: const Duration(milliseconds: 150),
-              crossFadeState: provider.isGeocoding ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-              firstChild: _buildAddressShimmer(),
+              crossFadeState: provider.isGeocoding
+                  ? CrossFadeState.showFirst
+                  : CrossFadeState.showSecond,
+              firstChild: _buildAddressShimmer(context),
               secondChild: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     provider.selectedLocality,
-                    style: const TextStyle(
-                      color: kTextDark,
+                    style: TextStyle(
+                      color: context.textDark,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -407,7 +483,7 @@ class MapPickerScreen extends StatelessWidget {
                   Text(
                     provider.fullAddress,
                     style: TextStyle(
-                      color: Colors.grey.shade600,
+                      color: context.textMuted,
                       fontSize: 13,
                       height: 1.4,
                     ),
@@ -422,7 +498,9 @@ class MapPickerScreen extends StatelessWidget {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: provider.isGeocoding ? null : () => _onConfirm(context, provider),
+                onPressed: provider.isGeocoding
+                    ? null
+                    : () => _onConfirm(context, provider),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kPrimaryPink,
                   foregroundColor: Colors.white,
@@ -433,10 +511,7 @@ class MapPickerScreen extends StatelessWidget {
                 ),
                 child: const Text(
                   'Confirm & Proceed',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -446,7 +521,7 @@ class MapPickerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressShimmer() {
+  Widget _buildAddressShimmer(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -454,7 +529,7 @@ class MapPickerScreen extends StatelessWidget {
           width: 120,
           height: 18,
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: context.dividerColor,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -463,7 +538,7 @@ class MapPickerScreen extends StatelessWidget {
           width: double.infinity,
           height: 14,
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: context.dividerColor,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -472,7 +547,7 @@ class MapPickerScreen extends StatelessWidget {
           width: 200,
           height: 14,
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: context.dividerColor,
             borderRadius: BorderRadius.circular(4),
           ),
         ),

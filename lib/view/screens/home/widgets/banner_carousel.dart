@@ -23,71 +23,115 @@ class BannerCarousel extends StatelessWidget {
               final banner = homeProvider.banners[index];
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 20,
-                ),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF2D6F), Color(0xFFFF5E8F)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFF2D6F).withOpacity(0.25),
+                      color: const Color(0xFFFF2D6F).withValues(alpha: 0.25),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    children: [
+                      // 1. Background image (if available)
+                      if (banner.backgroundImage != null)
+                        Positioned.fill(
+                          child: banner.backgroundImage!.startsWith('http')
+                              ? Image.network(
+                                  banner.backgroundImage!,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(
+                                  banner.backgroundImage!,
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                      // 2. Gradient overlay to ensure text contrast and maintain brand color
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: banner.backgroundImage != null
+                                  ? [
+                                      const Color(
+                                        0xFFFF2D6F,
+                                      ).withValues(alpha: 0.85),
+                                      const Color(
+                                        0xFFFF5E8F,
+                                      ).withValues(alpha: 0.45),
+                                    ]
+                                  : [
+                                      const Color(0xFFFF2D6F),
+                                      const Color(0xFFFF5E8F),
+                                    ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
                             ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              banner.category.toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      // 3. Banner contents
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.25,
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      banner.category.toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    banner.title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            banner.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              height: 1.2,
+                            const SizedBox(width: 10),
+                            Icon(
+                              banner.icon,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              size: 56,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Icon(
-                      banner.icon,
-                      color: Colors.white.withOpacity(0.9),
-                      size: 56,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

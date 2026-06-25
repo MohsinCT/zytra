@@ -10,10 +10,7 @@ class MapLoadingOverlay extends StatelessWidget {
   /// Message displayed below the spinner.
   final String message;
 
-  const MapLoadingOverlay({
-    super.key,
-    this.message = 'Finding your location…',
-  });
+  const MapLoadingOverlay({super.key, this.message = 'Finding your location…'});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +27,10 @@ class MapLoadingOverlay extends StatelessWidget {
               valueListenable: scaleNotifier,
               builder: (context, scaleVal, child) {
                 return TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: scaleVal == 1.1 ? 0.9 : 1.1, end: scaleVal),
+                  tween: Tween<double>(
+                    begin: scaleVal == 1.1 ? 0.9 : 1.1,
+                    end: scaleVal,
+                  ),
                   duration: const Duration(milliseconds: 1200),
                   curve: Curves.easeInOut,
                   onEnd: () {
@@ -90,10 +90,7 @@ class MapLoadingOverlay extends StatelessWidget {
             const SizedBox(height: kSpacingXS),
             Text(
               'This may take a few seconds',
-              style: TextStyle(
-                fontSize: 12,
-                color: kTextMuted,
-              ),
+              style: TextStyle(fontSize: 12, color: kTextMuted),
             ),
           ],
         ),

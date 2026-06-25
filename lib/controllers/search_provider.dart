@@ -36,7 +36,10 @@ class SearchProvider extends ChangeNotifier {
     _isSearching = true;
     notifyListeners();
 
-    final searchResults = await ProductService.searchProducts(queryText, category: category);
+    final searchResults = await ProductService.searchProducts(
+      queryText,
+      category: category,
+    );
 
     // Guard against race conditions
     if (_query == queryText) {

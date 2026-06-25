@@ -19,7 +19,8 @@ class AddressProvider extends ChangeNotifier {
   List<AddressEntry> get addresses => List.unmodifiable(_addresses);
 
   AddressEntry? get activeAddress {
-    if (_activeAddressId == null) return _addresses.isNotEmpty ? _addresses.first : null;
+    if (_activeAddressId == null)
+      return _addresses.isNotEmpty ? _addresses.first : null;
     try {
       return _addresses.firstWhere((a) => a.id == _activeAddressId);
     } catch (_) {
@@ -46,7 +47,9 @@ class AddressProvider extends ChangeNotifier {
         final List<dynamic> decoded = jsonDecode(jsonString);
         _addresses.clear();
         for (final item in decoded) {
-          _addresses.add(AddressEntry.fromJson(Map<String, dynamic>.from(item)));
+          _addresses.add(
+            AddressEntry.fromJson(Map<String, dynamic>.from(item)),
+          );
         }
       }
 

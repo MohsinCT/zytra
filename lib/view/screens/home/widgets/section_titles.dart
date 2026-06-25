@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zytranow/core/constants/app_constants.dart';
 
 class SectionTitle extends StatelessWidget {
   final String title;
@@ -11,10 +12,10 @@ class SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w800,
-          color: Colors.black87,
+          color: context.textDark,
         ),
       ),
     );
@@ -40,10 +41,10 @@ class SectionTitleWithAction extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: Colors.black87,
+              color: context.textDark,
             ),
           ),
           Text(

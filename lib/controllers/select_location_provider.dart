@@ -9,7 +9,7 @@ class SelectLocationProvider extends ChangeNotifier {
     'Vellayil',
     'Poovattuparamba',
     'Valanchery',
-    'Kozhikode'
+    'Kozhikode',
   ];
 
   final Map<String, UserAddress> _mockCoordinates = {

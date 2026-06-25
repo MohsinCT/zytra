@@ -75,11 +75,7 @@ class PermissionDeniedWidget extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: kTextMuted,
-                height: 1.55,
-              ),
+              style: TextStyle(fontSize: 14, color: kTextMuted, height: 1.55),
             ),
             const SizedBox(height: kSpacingXL),
 

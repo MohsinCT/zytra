@@ -56,20 +56,28 @@ class FloatingCartCapsule extends StatelessWidget {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) =>
-                                  const CartScreen(),
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      const CartScreen(),
                               transitionsBuilder:
-                                  (context, animation, secondaryAnimation, child) {
-                                const begin = Offset(0.0, 1.0);
-                                const end = Offset.zero;
-                                const curve = Curves.easeInOutCubic;
-                                var tween = Tween(begin: begin, end: end)
-                                    .chain(CurveTween(curve: curve));
-                                return SlideTransition(
-                                  position: animation.drive(tween),
-                                  child: child,
-                                );
-                              },
+                                  (
+                                    context,
+                                    animation,
+                                    secondaryAnimation,
+                                    child,
+                                  ) {
+                                    const begin = Offset(0.0, 1.0);
+                                    const end = Offset.zero;
+                                    const curve = Curves.easeInOutCubic;
+                                    var tween = Tween(
+                                      begin: begin,
+                                      end: end,
+                                    ).chain(CurveTween(curve: curve));
+                                    return SlideTransition(
+                                      position: animation.drive(tween),
+                                      child: child,
+                                    );
+                                  },
                             ),
                           );
                         },
@@ -86,7 +94,9 @@ class FloatingCartCapsule extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.1),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
@@ -94,22 +104,29 @@ class FloatingCartCapsule extends StatelessWidget {
                                 ),
                                 padding: const EdgeInsets.all(3),
                                 child: ClipOval(
-                                  child: lastItem != null &&
+                                  child:
+                                      lastItem != null &&
                                           lastItem.imageAsset.isNotEmpty
                                       ? (lastItem.imageAsset.startsWith('http')
-                                          ? CachedNetworkImage(
-                                              imageUrl: lastItem.imageAsset,
-                                              fit: BoxFit.contain,
-                                              errorWidget: (context, url, error) => const Icon(
-                                                Icons.shopping_bag_outlined,
-                                                color: Color(0xFFFF2D6F),
-                                                size: 16,
-                                              ),
-                                            )
-                                          : Image.asset(
-                                              lastItem.imageAsset,
-                                              fit: BoxFit.contain,
-                                            ))
+                                            ? CachedNetworkImage(
+                                                imageUrl: lastItem.imageAsset,
+                                                fit: BoxFit.contain,
+                                                errorWidget:
+                                                    (
+                                                      context,
+                                                      url,
+                                                      error,
+                                                    ) => const Icon(
+                                                      Icons
+                                                          .shopping_bag_outlined,
+                                                      color: Color(0xFFFF2D6F),
+                                                      size: 16,
+                                                    ),
+                                              )
+                                            : Image.asset(
+                                                lastItem.imageAsset,
+                                                fit: BoxFit.contain,
+                                              ))
                                       : const Icon(
                                           Icons.shopping_bag_outlined,
                                           color: Color(0xFFFF2D6F),
@@ -136,7 +153,9 @@ class FloatingCartCapsule extends StatelessWidget {
                                     Text(
                                       '${cart.totalItems} ${cart.totalItems == 1 ? 'Item' : 'Items'} • ₹${cart.totalPrice.toStringAsFixed(0)}',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.9),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.9,
+                                        ),
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                       ),

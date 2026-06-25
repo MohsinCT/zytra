@@ -6,6 +6,7 @@ import 'package:zytranow/view/screens/home/home_screen.dart';
 import 'package:zytranow/view/screens/order_again/order_again_screen.dart';
 import 'package:zytranow/view/screens/categories/categories_screen.dart';
 import 'package:zytranow/view/widgets/floating_cart_capsule.dart';
+import 'package:zytranow/core/constants/app_constants.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -13,6 +14,7 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nav = context.watch<NavProvider>();
+    final isDark = context.isDark;
 
     final screens = const [
       HomeScreen(),
@@ -40,7 +42,9 @@ class MainScreen extends StatelessWidget {
           Positioned(
             left: 0,
             right: 0,
-            bottom: bottomPadding + 110, // Sits beautifully above custom glassmorphic nav bar (75 height + 24 padding)
+            bottom:
+                bottomPadding +
+                110, // Sits beautifully above custom glassmorphic nav bar (75 height + 24 padding)
             child: const FloatingCartCapsule(),
           ),
         ],
@@ -68,9 +72,11 @@ class MainScreen extends StatelessWidget {
                         child: Container(
                           height: 75,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(
-                              0.15,
-                            ), // Semi-transparent glass
+                            color: isDark
+                                ? Colors.black.withOpacity(0.4)
+                                : Colors.white.withOpacity(
+                                    0.15,
+                                  ), // Semi-transparent glass
                             borderRadius: BorderRadius.circular(40),
                             boxShadow: [
                               BoxShadow(
@@ -80,9 +86,11 @@ class MainScreen extends StatelessWidget {
                               ),
                             ],
                             border: Border.all(
-                              color: Colors.white.withOpacity(
-                                0.3,
-                              ), // Soft frosted edge
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.15)
+                                  : Colors.white.withOpacity(
+                                      0.3,
+                                    ), // Soft frosted edge
                               width: 1.5,
                             ),
                           ),
@@ -120,6 +128,7 @@ class MainScreen extends StatelessWidget {
   Widget _navItem(BuildContext context, IconData icon, String label, int i) {
     final nav = context.watch<NavProvider>();
     final isActive = nav.index == i;
+    final isDark = context.isDark;
 
     return GestureDetector(
       onTap: () => nav.updateIndex(i),
@@ -129,7 +138,11 @@ class MainScreen extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? Colors.white.withOpacity(0.8) : Colors.transparent,
+          color: isActive
+              ? (isDark
+                    ? Colors.white.withOpacity(0.15)
+                    : Colors.white.withOpacity(0.8))
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
           boxShadow: isActive
               ? [
@@ -149,14 +162,18 @@ class MainScreen extends StatelessWidget {
               icon,
               color: isActive
                   ? const Color(0xFFFF2D6F)
-                  : Colors.black54, // Muted grey for inactive
+                  : (isDark
+                        ? Colors.white70
+                        : Colors.black54), // Muted color for inactive
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isActive ? const Color(0xFFFF2D6F) : Colors.black54,
+                color: isActive
+                    ? const Color(0xFFFF2D6F)
+                    : (isDark ? Colors.white70 : Colors.black54),
                 fontSize: 11,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
               ),

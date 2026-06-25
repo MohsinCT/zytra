@@ -12,7 +12,9 @@ class ProductDetailsProvider extends ChangeNotifier {
 
   ProductDetailsProvider(this.product) {
     pageController = PageController(initialPage: 0);
-    _selectedVariant = product.variants.isNotEmpty ? product.variants.first : null;
+    _selectedVariant = product.variants.isNotEmpty
+        ? product.variants.first
+        : null;
 
     // Auto slide carousel every 3 seconds
     _carouselTimer = Timer.periodic(const Duration(seconds: 3), (timer) {

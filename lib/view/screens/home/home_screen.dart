@@ -9,6 +9,9 @@ import 'package:zytranow/view/screens/home/widgets/home_top_bar.dart';
 import 'package:zytranow/view/screens/home/widgets/popular_product_list.dart';
 import 'package:zytranow/view/screens/home/widgets/quick_needs_grid.dart';
 import 'package:zytranow/view/screens/home/widgets/section_titles.dart';
+import 'package:zytranow/core/constants/app_constants.dart';
+import 'package:zytranow/view/screens/home/widgets/category_tab_bar.dart';
+import 'package:zytranow/view/screens/categories/widgets/category_section_widget.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -27,7 +30,10 @@ class HomeScreen extends StatelessWidget {
 
     if (homeProvider.isLoading) {
       return Center(
-        child: LoadingAnimationWidget.inkDrop(color: const Color(0xFFFF2D6F), size: 35.0),
+        child: LoadingAnimationWidget.inkDrop(
+          color: const Color(0xFFFF2D6F),
+          size: 35.0,
+        ),
       );
     }
 
@@ -44,64 +50,87 @@ class HomeScreen extends StatelessWidget {
           ),
 
           // STICKY SEARCH BAR
-          const SliverAppBar(
+          SliverAppBar(
             pinned: true,
             floating: true,
             primary: false,
-            backgroundColor: Color(0xFFF8F9FA), // Solid background
+            backgroundColor: context.scaffoldBackground, // Solid background
             elevation: 0,
             toolbarHeight: 70,
             titleSpacing: 0,
-            title: Padding(
+            title: const Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: HomeSearchBar(),
             ),
+            bottom: const CategoryTabBar(),
           ),
 
-          // MAIN CONTENT
-          SliverList(
-            delegate: SliverChildListDelegate([
-              const SizedBox(height: 10),
-              const BannerCarousel(),
-              const SizedBox(height: 24),
-              const SectionTitle(title: "⚡ Quick Needs"),
-              const SizedBox(height: 12),
-            ]),
-          ),
-
-          // QUICK NEEDS GRID
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: QuickNeedsGrid(
-              categories: homeProvider.quickCategories,
-              columns: quickNeedsCols,
+          if (homeProvider.activeTab == 'All') ...[
+            // MAIN CONTENT
+            SliverList(
+              delegate: SliverChildListDelegate([
+                const SizedBox(height: 10),
+                const BannerCarousel(),
+                const SizedBox(height: 24),
+                const SectionTitle(title: "⚡ Quick Needs"),
+                const SizedBox(height: 12),
+              ]),
             ),
-          ),
 
-          // POPULAR NOW
-          SliverList(
-            delegate: SliverChildListDelegate([
-              const SizedBox(height: 24),
-              const SectionTitleWithAction(
-                title: "🔥 Popular Now",
-                action: "See All",
+            // QUICK NEEDS GRID
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: QuickNeedsGrid(
+                categories: homeProvider.quickCategories,
+                columns: quickNeedsCols,
               ),
-              const SizedBox(height: 12),
-              PopularProductList(products: homeProvider.popularProducts),
-              const SizedBox(height: 24),
-              const SectionTitle(title: "Explore Categories"),
-              const SizedBox(height: 12),
-            ]),
-          ),
-
-          // EXPLORE CATEGORIES GRID
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: AllCategoriesGrid(
-              categories: homeProvider.allCategories,
-              columns: allCategoriesCols,
             ),
-          ),
+
+            // POPULAR NOW
+            SliverList(
+              delegate: SliverChildListDelegate([
+                const SizedBox(height: 24),
+                const SectionTitleWithAction(
+                  title: "🔥 Popular Now",
+                  action: "See All",
+                ),
+                const SizedBox(height: 12),
+                PopularProductList(products: homeProvider.popularProducts),
+                const SizedBox(height: 24),
+                const SectionTitle(title: "Explore Categories"),
+                const SizedBox(height: 12),
+              ]),
+            ),
+
+            // EXPLORE CATEGORIES GRID
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: AllCategoriesGrid(
+                categories: homeProvider.allCategories,
+                columns: allCategoriesCols,
+              ),
+            ),
+          ] else ...[
+            // CAROUSEL & DYNAMIC FILTERED SECTIONS
+            SliverList(
+              delegate: SliverChildListDelegate([
+                const SizedBox(height: 10),
+                const BannerCarousel(),
+                const SizedBox(height: 16),
+              ]),
+            ),
+
+            // RENDER 3 CATEGORIES SECTIONS DYNAMICALLY
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final section = homeProvider.activeSections[index];
+                  return CategorySectionWidget(section: section);
+                },
+                childCount: homeProvider.activeSections.length,
+              ),
+            ),
+          ],
 
           // BOTTOM PADDING
           const SliverPadding(padding: EdgeInsets.only(bottom: 140)),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 // ─── Brand Colours ───────────────────────────────────────────────────────────
 
 /// Zytra primary brand pink — used for CTAs, pins, active states.
@@ -50,3 +49,22 @@ const Duration kLocationTimeout = Duration(seconds: 15);
 
 /// Debounce delay for reverse-geocoding after map camera settles.
 const Duration kGeocodeDebounce = Duration(milliseconds: 600);
+
+// ─── Theme Extensions ────────────────────────────────────────────────────────
+extension ThemeExtensions on BuildContext {
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
+
+  Color get textDark =>
+      isDark ? const Color(0xFFF5F5F7) : const Color(0xFF1A1A2E);
+  Color get textMuted =>
+      isDark ? const Color(0xFF9E9EAE) : const Color(0xFF8A8A9A);
+  Color get scaffoldBackground =>
+      isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
+  Color get cardBackground => isDark ? const Color(0xFF1E1E1E) : Colors.white;
+  Color get borderTheme =>
+      isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA);
+  Color get dividerColor =>
+      isDark ? const Color(0xFF2C2C30) : const Color(0xFFF2F2F7);
+  Color get inputFill =>
+      isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
+}

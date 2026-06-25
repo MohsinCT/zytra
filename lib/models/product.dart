@@ -64,7 +64,8 @@ class Product {
       images: List<String>.from(json['images'] ?? []),
       specifications: Map<String, String>.from(json['specifications'] ?? {}),
       variants: List<String>.from(json['variants'] ?? []),
-      similarProducts: (json['similarProducts'] as List?)
+      similarProducts:
+          (json['similarProducts'] as List?)
               ?.map((p) => Product.fromJson(Map<String, dynamic>.from(p)))
               .toList() ??
           [],
@@ -92,7 +93,9 @@ class Product {
       'images': images,
       'specifications': specifications,
       'variants': variants,
-      'similarProducts': similarProducts.map((p) => p.toJsonWithoutSimilar()).toList(),
+      'similarProducts': similarProducts
+          .map((p) => p.toJsonWithoutSimilar())
+          .toList(),
     };
   }
 

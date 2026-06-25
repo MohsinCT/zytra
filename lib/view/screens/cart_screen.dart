@@ -27,7 +27,11 @@ class CartScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.black,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -70,7 +74,12 @@ class CartScreen extends StatelessWidget {
                             child: ListView(
                               padding: const EdgeInsets.all(24),
                               children: [
-                                _buildItemsList(context, cart, uniqueProducts, resp),
+                                _buildItemsList(
+                                  context,
+                                  cart,
+                                  uniqueProducts,
+                                  resp,
+                                ),
                               ],
                             ),
                           ),
@@ -95,7 +104,12 @@ class CartScreen extends StatelessWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  _buildBillDetailsCard(itemTotal, deliveryFee, handlingCharge, grandTotal),
+                                  _buildBillDetailsCard(
+                                    itemTotal,
+                                    deliveryFee,
+                                    handlingCharge,
+                                    grandTotal,
+                                  ),
                                   const SizedBox(height: 24),
                                   _buildCheckoutButton(context, grandTotal),
                                 ],
@@ -108,11 +122,24 @@ class CartScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: ListView(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               children: [
-                                _buildItemsList(context, cart, uniqueProducts, resp),
+                                _buildItemsList(
+                                  context,
+                                  cart,
+                                  uniqueProducts,
+                                  resp,
+                                ),
                                 const SizedBox(height: 16),
-                                _buildBillDetailsCard(itemTotal, deliveryFee, handlingCharge, grandTotal),
+                                _buildBillDetailsCard(
+                                  itemTotal,
+                                  deliveryFee,
+                                  handlingCharge,
+                                  grandTotal,
+                                ),
                                 const SizedBox(height: 24),
                               ],
                             ),
@@ -154,10 +181,7 @@ class CartScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Add items to get superfast delivery in minutes!',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 32),
           ElevatedButton(
@@ -239,23 +263,23 @@ class CartScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(6),
                     child: product.imageAsset.isNotEmpty
                         ? (product.imageAsset.startsWith('http')
-                            ? CachedNetworkImage(
-                                imageUrl: product.imageAsset,
-                                fit: BoxFit.contain,
-                                placeholder: (_, __) => const ShimmerLoader(
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  borderRadius: 8,
-                                ),
-                                errorWidget: (_, __, ___) => const Icon(
-                                  Icons.image_not_supported_outlined,
-                                  color: Colors.grey,
-                                ),
-                              )
-                            : Image.asset(
-                                product.imageAsset,
-                                fit: BoxFit.contain,
-                              ))
+                              ? CachedNetworkImage(
+                                  imageUrl: product.imageAsset,
+                                  fit: BoxFit.contain,
+                                  placeholder: (_, __) => const ShimmerLoader(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    borderRadius: 8,
+                                  ),
+                                  errorWidget: (_, __, ___) => const Icon(
+                                    Icons.image_not_supported_outlined,
+                                    color: Colors.grey,
+                                  ),
+                                )
+                              : Image.asset(
+                                  product.imageAsset,
+                                  fit: BoxFit.contain,
+                                ))
                         : const Icon(Icons.image_outlined, color: Colors.grey),
                   ),
                   const SizedBox(width: 14),
@@ -416,7 +440,10 @@ class CartScreen extends StatelessWidget {
             valueColor: deliveryFee == 0 ? Colors.green : Colors.black87,
           ),
           const SizedBox(height: 10),
-          _buildBillRow('Handling Charge', '₹${handlingCharge.toStringAsFixed(0)}'),
+          _buildBillRow(
+            'Handling Charge',
+            '₹${handlingCharge.toStringAsFixed(0)}',
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Divider(),
@@ -503,7 +530,11 @@ class CartScreen extends StatelessWidget {
             children: [
               const Text(
                 'TOTAL TO PAY',
-                style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.w800),
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
@@ -541,7 +572,7 @@ class CartScreen extends StatelessWidget {
               color: const Color(0xFFFF2D6F).withOpacity(0.35),
               blurRadius: 12,
               offset: const Offset(0, 4),
-            )
+            ),
           ],
         ),
         child: const Row(
@@ -590,7 +621,11 @@ class CartScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Order Placed Successfully!',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                   Text(
                     'Zytra Now is preparing your emergency delivery.',
@@ -610,19 +645,33 @@ class CartScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Clear Cart', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Are you sure you want to remove all items from your cart?'),
+        title: const Text(
+          'Clear Cart',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to remove all items from your cart?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
           ),
           TextButton(
             onPressed: () {
               cart.clearCart();
               Navigator.pop(ctx);
             },
-            child: const Text('Clear', style: TextStyle(color: Color(0xFFFF2D6F), fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Clear',
+              style: TextStyle(
+                color: Color(0xFFFF2D6F),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

@@ -12,7 +12,10 @@ class AuthProvider extends ChangeNotifier {
   bool isVerifying = false;
 
   final TextEditingController phoneController = TextEditingController();
-  final List<TextEditingController> otpControllers = List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> otpControllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> otpFocusNodes = List.generate(4, (_) => FocusNode());
 
   void validatePhone(BuildContext context) {
@@ -75,7 +78,7 @@ class AuthProvider extends ChangeNotifier {
       await Future.delayed(const Duration(seconds: 5));
 
       if (!context.mounted) return;
-      
+
       isVerifying = false;
       notifyListeners();
 

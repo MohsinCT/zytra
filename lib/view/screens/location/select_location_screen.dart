@@ -20,16 +20,25 @@ class SelectLocationScreen extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => const Center(
+      builder: (ctx) => Center(
         child: Card(
+          color: context.cardBackground,
           child: Padding(
-            padding: EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(kPrimaryPink)),
-                SizedBox(height: 16),
-                Text('Fetching Current Location...', style: TextStyle(fontWeight: FontWeight.bold)),
+                const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(kPrimaryPink),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Fetching Current Location...',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: context.textDark,
+                  ),
+                ),
               ],
             ),
           ),
@@ -62,7 +71,9 @@ class SelectLocationScreen extends StatelessWidget {
         }
       } else {
         // Show error message from provider
-        final errorMsg = locationProvider.errorMessage ?? 'Could not fetch your location. Please check your GPS and permissions.';
+        final errorMsg =
+            locationProvider.errorMessage ??
+            'Could not fetch your location. Please check your GPS and permissions.';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMsg),
@@ -92,19 +103,19 @@ class SelectLocationScreen extends StatelessWidget {
           final suggestions = selectLocProvider.suggestions;
 
           return Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: context.scaffoldBackground,
             appBar: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: context.scaffoldBackground,
               elevation: 0,
               surfaceTintColor: Colors.transparent,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: kTextDark),
+                icon: Icon(Icons.arrow_back, color: context.textDark),
                 onPressed: () => Navigator.pop(context),
               ),
-              title: const Text(
+              title: Text(
                 'Select your location',
                 style: TextStyle(
-                  color: kTextDark,
+                  color: context.textDark,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -114,8 +125,11 @@ class SelectLocationScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: _buildSearchField(selectLocProvider),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: _buildSearchField(selectLocProvider, context),
                   ),
                   Expanded(
                     child: Stack(
@@ -133,10 +147,10 @@ class SelectLocationScreen extends StatelessWidget {
                               _buildAddNewAddressTile(context),
                               const SizedBox(height: 28),
                               // Saved Addresses
-                              const Text(
+                              Text(
                                 'Saved Addresses',
                                 style: TextStyle(
-                                  color: kTextDark,
+                                  color: context.textDark,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -148,7 +162,8 @@ class SelectLocationScreen extends StatelessWidget {
                           ),
                         ),
                         // Dropdown Suggestions overlay
-                        if (suggestions.isNotEmpty) _buildSuggestionsList(context, selectLocProvider),
+                        if (suggestions.isNotEmpty)
+                          _buildSuggestionsList(context, selectLocProvider),
                       ],
                     ),
                   ),
@@ -161,23 +176,30 @@ class SelectLocationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchField(SelectLocationProvider selectLocProvider) {
+  Widget _buildSearchField(
+    SelectLocationProvider selectLocProvider,
+    BuildContext context,
+  ) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: context.inputFill,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: context.borderTheme),
       ),
       child: TextField(
         controller: selectLocProvider.searchController,
-        style: const TextStyle(fontSize: 15, color: kTextDark, fontWeight: FontWeight.w500),
+        style: TextStyle(
+          fontSize: 15,
+          color: context.textDark,
+          fontWeight: FontWeight.w500,
+        ),
         decoration: InputDecoration(
           hintText: 'Search an area or address',
-          hintStyle: const TextStyle(color: kTextMuted, fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: kTextMuted),
+          hintStyle: TextStyle(color: context.textMuted, fontSize: 14),
+          prefixIcon: Icon(Icons.search, color: context.textMuted),
           suffixIcon: selectLocProvider.searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: kTextMuted, size: 18),
+                  icon: Icon(Icons.clear, color: context.textMuted, size: 18),
                   onPressed: () => selectLocProvider.clearSearch(),
                 )
               : null,
@@ -197,7 +219,10 @@ class SelectLocationScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: kPrimaryPink.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: kPrimaryPink.withValues(alpha: 0.35), width: 1.5),
+          border: Border.all(
+            color: kPrimaryPink.withValues(alpha: 0.35),
+            width: 1.5,
+          ),
         ),
         child: const Row(
           children: [
@@ -239,48 +264,51 @@ class SelectLocationScreen extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => const MapPickerScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const MapPickerScreen()),
         );
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: context.borderTheme),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.015),
+              color: Colors.black.withValues(
+                alpha: context.isDark ? 0.005 : 0.015,
+              ),
               blurRadius: 10,
               offset: const Offset(0, 4),
-            )
+            ),
           ],
         ),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.add, color: kPrimaryPink, size: 22),
-            SizedBox(width: 14),
+            const Icon(Icons.add, color: kPrimaryPink, size: 22),
+            const SizedBox(width: 14),
             Expanded(
               child: Text(
                 'Add New Address',
                 style: TextStyle(
-                  color: kTextDark,
+                  color: context.textDark,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            Icon(Icons.chevron_right, color: kTextMuted, size: 20),
+            Icon(Icons.chevron_right, color: context.textMuted, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSuggestionsList(BuildContext context, SelectLocationProvider selectLocProvider) {
+  Widget _buildSuggestionsList(
+    BuildContext context,
+    SelectLocationProvider selectLocProvider,
+  ) {
     final suggestions = selectLocProvider.suggestions;
 
     return Positioned(
@@ -290,15 +318,17 @@ class SelectLocationScreen extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxHeight: 250),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.cardBackground,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: context.borderTheme),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withValues(
+                alpha: context.isDark ? 0.02 : 0.1,
+              ),
               blurRadius: 12,
               offset: const Offset(0, 6),
-            )
+            ),
           ],
         ),
         child: ListView.builder(
@@ -306,22 +336,30 @@ class SelectLocationScreen extends StatelessWidget {
           itemCount: suggestions.length,
           itemBuilder: (ctx, index) {
             final suggestion = suggestions[index];
-            final selectedAddress = selectLocProvider.mockCoordinates[suggestion];
+            final selectedAddress =
+                selectLocProvider.mockCoordinates[suggestion];
             return ListTile(
-              leading: const Icon(Icons.location_on_outlined, color: kPrimaryPink),
+              leading: const Icon(
+                Icons.location_on_outlined,
+                color: kPrimaryPink,
+              ),
               title: Text(
                 suggestion,
-                style: const TextStyle(fontWeight: FontWeight.bold, color: kTextDark),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: context.textDark,
+                ),
               ),
               subtitle: Text(
                 selectedAddress?.fullAddress ?? '',
-                style: const TextStyle(fontSize: 12, color: kTextMuted),
+                style: TextStyle(fontSize: 12, color: context.textMuted),
               ),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => MapPickerScreen(initialAddress: selectedAddress),
+                    builder: (_) =>
+                        MapPickerScreen(initialAddress: selectedAddress),
                   ),
                 );
               },
@@ -344,7 +382,7 @@ class SelectLocationScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 24.0),
               child: Text(
                 'No saved addresses yet',
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                style: TextStyle(color: context.textMuted, fontSize: 13),
               ),
             ),
           );
@@ -368,7 +406,10 @@ class SelectLocationScreen extends StatelessWidget {
 
             return InkWell(
               onTap: () async {
-                final locProvider = Provider.of<LocationProvider>(context, listen: false);
+                final locProvider = Provider.of<LocationProvider>(
+                  context,
+                  listen: false,
+                );
                 await addressProvider.setActive(entry.id);
                 await locProvider.saveConfirmedLocation(entry.address);
 
@@ -380,18 +421,22 @@ class SelectLocationScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isSelected ? kPrimaryPink.withValues(alpha: 0.04) : Colors.white,
+                  color: isSelected
+                      ? kPrimaryPink.withValues(alpha: 0.04)
+                      : context.cardBackground,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected ? kPrimaryPink : Colors.grey.shade200,
+                    color: isSelected ? kPrimaryPink : context.borderTheme,
                     width: isSelected ? 1.5 : 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.01),
+                      color: Colors.black.withValues(
+                        alpha: context.isDark ? 0.005 : 0.01,
+                      ),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
-                    )
+                    ),
                   ],
                 ),
                 child: Row(
@@ -399,7 +444,7 @@ class SelectLocationScreen extends StatelessWidget {
                   children: [
                     Icon(
                       typeIcon,
-                      color: isSelected ? kPrimaryPink : kTextMuted,
+                      color: isSelected ? kPrimaryPink : context.textMuted,
                       size: 24,
                     ),
                     const SizedBox(width: 14),
@@ -413,18 +458,21 @@ class SelectLocationScreen extends StatelessWidget {
                                 entry.type == AddressType.home
                                     ? 'Home'
                                     : entry.type == AddressType.office
-                                        ? 'Office'
-                                        : 'Other',
-                                style: const TextStyle(
+                                    ? 'Office'
+                                    : 'Other',
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
-                                  color: kTextDark,
+                                  color: context.textDark,
                                 ),
                               ),
                               if (isSelected) ...[
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: kPrimaryPink,
                                     borderRadius: BorderRadius.circular(4),
@@ -444,8 +492,8 @@ class SelectLocationScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             entry.address.fullAddress,
-                            style: const TextStyle(
-                              color: kTextDark,
+                            style: TextStyle(
+                              color: context.textDark,
                               fontSize: 13,
                               height: 1.4,
                             ),
@@ -453,8 +501,8 @@ class SelectLocationScreen extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             'Receiver: ${entry.receiverName} (${entry.receiverNumber})',
-                            style: const TextStyle(
-                              color: kTextMuted,
+                            style: TextStyle(
+                              color: context.textMuted,
                               fontSize: 12,
                             ),
                           ),
@@ -462,18 +510,37 @@ class SelectLocationScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: kTextMuted, size: 20),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: context.textMuted,
+                        size: 20,
+                      ),
                       onPressed: () {
                         showDialog(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            title: const Text('Delete address?', style: TextStyle(fontWeight: FontWeight.bold)),
-                            content: const Text('Are you sure you want to remove this saved address?'),
+                            backgroundColor: context.cardBackground,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            title: Text(
+                              'Delete address?',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: context.textDark,
+                              ),
+                            ),
+                            content: Text(
+                              'Are you sure you want to remove this saved address?',
+                              style: TextStyle(color: context.textDark),
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(color: context.textMuted),
+                                ),
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(

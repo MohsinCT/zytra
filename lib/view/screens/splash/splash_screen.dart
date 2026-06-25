@@ -38,7 +38,11 @@ class SplashScreen extends StatelessWidget {
   }
 
   // Extracted builder for clarity and structure
-  Widget _buildSplashContent(double titleSize, double subtitleSize, double spacing) {
+  Widget _buildSplashContent(
+    double titleSize,
+    double subtitleSize,
+    double spacing,
+  ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,

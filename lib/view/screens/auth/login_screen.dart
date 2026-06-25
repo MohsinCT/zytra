@@ -78,7 +78,7 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Middle Text Section
             Padding(
               padding: const EdgeInsets.all(24),
@@ -113,7 +113,7 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Phone Input Field
                   Container(
                     decoration: BoxDecoration(
@@ -134,10 +134,18 @@ class LoginScreen extends StatelessWidget {
                           padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
                             "+91",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
-                        Container(width: 1, height: 24, color: Colors.grey.shade300),
+                        Container(
+                          width: 1,
+                          height: 24,
+                          color: Colors.grey.shade300,
+                        ),
                         Expanded(
                           child: TextField(
                             controller: auth.phoneController,
@@ -146,21 +154,33 @@ class LoginScreen extends StatelessWidget {
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(10),
                             ],
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
                             decoration: const InputDecoration(
                               hintText: "Enter mobile number",
-                              hintStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.normal, color: Colors.black38, letterSpacing: 0),
+                              hintStyle: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black38,
+                                letterSpacing: 0,
+                              ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Continue Button
                   SizedBox(
                     width: double.infinity,
@@ -176,7 +196,11 @@ class LoginScreen extends StatelessWidget {
                       ),
                       child: const Text(
                         "Continue",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),

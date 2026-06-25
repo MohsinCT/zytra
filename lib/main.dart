@@ -15,6 +15,7 @@ import 'package:zytranow/controllers/category_products_provider.dart';
 import 'package:zytranow/controllers/cart_provider.dart';
 import 'package:zytranow/view/screens/splash/splash_screen.dart';
 import 'package:zytranow/view/screens/categories/category_products_screen.dart';
+import 'package:zytranow/view/screens/categories/subcategories_grid_screen.dart';
 import 'package:zytranow/view/screens/location/map_picker_screen.dart';
 import 'package:zytranow/view/screens/location/address_details_screen.dart';
 
@@ -26,12 +27,7 @@ import 'package:zytranow/view/screens/location/address_details_screen.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(
-    MultiProvider(
-      providers: _appProviders,
-      child: const ZytraApp(),
-    ),
-  );
+  runApp(MultiProvider(providers: _appProviders, child: const ZytraApp()));
 }
 
 // Centralized providers list to keep main tidy and make it easy to add/remove providers.
@@ -55,12 +51,32 @@ class ZytraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseTheme = ThemeData(
+    final isDark = context.watch<ThemeProvider>().isDark;
+
+    final lightTheme = ThemeData(
+      brightness: Brightness.light,
       scaffoldBackgroundColor: const Color(0xFFF8F9FA), // Light grey
       primaryColor: const Color(0xFFFF2D6F), // Pink
-      colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.pink).copyWith(
-        secondary: const Color(0xFFFF2D6F),
-      ),
+      colorScheme: ColorScheme.fromSwatch(
+        primarySwatch: Colors.pink,
+        brightness: Brightness.light,
+      ).copyWith(secondary: const Color(0xFFFF2D6F), surface: Colors.white),
+      fontFamily: 'Inter',
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+    );
+
+    final darkTheme = ThemeData(
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0xFF121212), // Premium Dark
+      primaryColor: const Color(0xFFFF2D6F), // Pink
+      colorScheme:
+          ColorScheme.fromSwatch(
+            primarySwatch: Colors.pink,
+            brightness: Brightness.dark,
+          ).copyWith(
+            secondary: const Color(0xFFFF2D6F),
+            surface: const Color(0xFF1E1E1E), // Dark grey surface
+          ),
       fontFamily: 'Inter',
       visualDensity: VisualDensity.adaptivePlatformDensity,
     );
@@ -69,7 +85,9 @@ class ZytraApp extends StatelessWidget {
     // so that text and small UI elements scale reasonably across phones/tablets/web.
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: baseTheme,
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       // The builder receives the child (Navigator / routes). We wrap it with LayoutBuilder
       // to decide a sane textScaleFactor based on available width.
       builder: (context, child) {
@@ -94,7 +112,9 @@ class ZytraApp extends StatelessWidget {
             // Also respect user accessibility text scale but clamp it to a reasonable range
             // to keep UI from breaking; this combines systemTextScaleFactor and our calculated scale.
             final systemScale = MediaQuery.of(context).textScaleFactor;
-            final combined = (systemScale * textScale).clamp(0.8, 1.4).toDouble();
+            final combined = (systemScale * textScale)
+                .clamp(0.8, 1.4)
+                .toDouble();
 
             return MediaQuery(
               data: MediaQuery.of(context).copyWith(textScaleFactor: combined),
@@ -107,10 +127,24 @@ class ZytraApp extends StatelessWidget {
       // optional named route for categories
       routes: {
         '/category': (ctx) {
-          final args = ModalRoute.of(ctx)!.settings.arguments as String? ?? 'Cleaning Essentials';
-          return CategoryProductsScreen(categoryName: args);
-        }
-        ,
+          final args =
+              ModalRoute.of(ctx)!.settings.arguments as String? ??
+              'Fashion & Clothing';
+
+          final categoryProvider = Provider.of<CategoryProvider>(ctx, listen: false);
+          String normalize(String s) => s.replaceAll(RegExp(r'[^\w\s&]+'), '').trim().toLowerCase();
+          final normalizedArgs = normalize(args);
+
+          final isMainCategory = categoryProvider.sections.any(
+            (sec) => normalize(sec.title) == normalizedArgs,
+          );
+
+          if (isMainCategory) {
+            return SubcategoriesGridScreen(mainCategoryName: args);
+          } else {
+            return CategoryProductsScreen(categoryName: args);
+          }
+        },
         '/map-picker': (ctx) => const MapPickerScreen(),
         '/address-details': (ctx) => const AddressDetailsScreen(),
       },

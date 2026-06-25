@@ -5,6 +5,7 @@ import 'package:zytranow/models/product.dart';
 import 'package:zytranow/controllers/cart_provider.dart';
 import 'package:zytranow/view/screens/categories/product_details_screen.dart';
 import 'package:zytranow/view/screens/home/widgets/shimmer_loader.dart';
+import 'package:zytranow/core/constants/app_constants.dart';
 
 class PopularProductList extends StatelessWidget {
   final List<Product> products;
@@ -22,8 +23,10 @@ class PopularProductList extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         itemBuilder: (context, i) {
           final product = products[i];
-          final isNetworkImage = product.imageAsset.isNotEmpty &&
-              (product.imageAsset.startsWith('http://') || product.imageAsset.startsWith('https://'));
+          final isNetworkImage =
+              product.imageAsset.isNotEmpty &&
+              (product.imageAsset.startsWith('http://') ||
+                  product.imageAsset.startsWith('https://'));
 
           return GestureDetector(
             onTap: () {
@@ -36,18 +39,25 @@ class PopularProductList extends StatelessWidget {
             },
             child: Container(
               width: 140,
-              margin: const EdgeInsets.only(left: 6, right: 6, bottom: 8, top: 4),
+              margin: const EdgeInsets.only(
+                left: 6,
+                right: 6,
+                bottom: 8,
+                top: 4,
+              ),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.cardBackground,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withOpacity(
+                      context.isDark ? 0.01 : 0.04,
+                    ),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ],
-                border: Border.all(color: Colors.grey.shade100),
+                border: Border.all(color: context.borderTheme),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,9 +65,9 @@ class PopularProductList extends StatelessWidget {
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF8F9FA),
-                        borderRadius: BorderRadius.vertical(
+                      decoration: BoxDecoration(
+                        color: context.inputFill,
+                        borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(16),
                         ),
                       ),
@@ -69,24 +79,26 @@ class PopularProductList extends StatelessWidget {
                           tag: 'product_image_${product.id}',
                           child: product.imageAsset.isNotEmpty
                               ? (isNetworkImage
-                                  ? CachedNetworkImage(
-                                      imageUrl: product.imageAsset,
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) => const ShimmerLoader(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        borderRadius: 16,
-                                      ),
-                                      errorWidget: (context, url, error) => const Icon(
-                                        Icons.image_not_supported,
-                                        color: Colors.grey,
-                                        size: 20,
-                                      ),
-                                    )
-                                  : Image.asset(
-                                      product.imageAsset,
-                                      fit: BoxFit.cover,
-                                    ))
+                                    ? CachedNetworkImage(
+                                        imageUrl: product.imageAsset,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            const ShimmerLoader(
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              borderRadius: 16,
+                                            ),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(
+                                              Icons.image_not_supported,
+                                              color: Colors.grey,
+                                              size: 20,
+                                            ),
+                                      )
+                                    : Image.asset(
+                                        product.imageAsset,
+                                        fit: BoxFit.cover,
+                                      ))
                               : const Center(
                                   child: Icon(
                                     Icons.image_outlined,
@@ -107,11 +119,11 @@ class PopularProductList extends StatelessWidget {
                           product.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                             height: 1.2,
-                            color: Colors.black87,
+                            color: context.textDark,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -120,10 +132,10 @@ class PopularProductList extends StatelessWidget {
                           children: [
                             Text(
                               "₹${product.price.toInt()}",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w900,
                                 fontSize: 14,
-                                color: Colors.black,
+                                color: context.textDark,
                               ),
                             ),
                             Consumer<CartProvider>(
@@ -134,10 +146,14 @@ class PopularProductList extends StatelessWidget {
                                     ? Container(
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFFF2D6F),
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: const Color(0xFFFF2D6F).withOpacity(0.2),
+                                              color: const Color(
+                                                0xFFFF2D6F,
+                                              ).withOpacity(0.2),
                                               blurRadius: 4,
                                               offset: const Offset(0, 2),
                                             ),
@@ -147,10 +163,15 @@ class PopularProductList extends StatelessWidget {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             GestureDetector(
-                                              onTap: () => cart.removeOne(product.id),
+                                              onTap: () =>
+                                                  cart.removeOne(product.id),
                                               child: const Padding(
                                                 padding: EdgeInsets.all(6.0),
-                                                child: Icon(Icons.remove, size: 12, color: Colors.white),
+                                                child: Icon(
+                                                  Icons.remove,
+                                                  size: 12,
+                                                  color: Colors.white,
+                                                ),
                                               ),
                                             ),
                                             Text(
@@ -165,7 +186,11 @@ class PopularProductList extends StatelessWidget {
                                               onTap: () => cart.add(product),
                                               child: const Padding(
                                                 padding: EdgeInsets.all(6.0),
-                                                child: Icon(Icons.add, size: 12, color: Colors.white),
+                                                child: Icon(
+                                                  Icons.add,
+                                                  size: 12,
+                                                  color: Colors.white,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -174,27 +199,50 @@ class PopularProductList extends StatelessWidget {
                                     : GestureDetector(
                                         onTap: () {
                                           cart.add(product);
-                                          ScaffoldMessenger.of(context).clearSnackBars();
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).clearSnackBars();
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             SnackBar(
-                                              backgroundColor: const Color(0xFF1E1E24),
-                                              behavior: SnackBarBehavior.floating,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 120),
-                                              duration: const Duration(seconds: 1),
-                                              content: Text('Added ${product.name} to Cart!'),
+                                              backgroundColor: const Color(
+                                                0xFF1E1E24,
+                                              ),
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 120,
+                                                  ),
+                                              duration: const Duration(
+                                                seconds: 1,
+                                              ),
+                                              content: Text(
+                                                'Added ${product.name} to Cart!',
+                                              ),
                                             ),
                                           );
                                         },
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 5,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: Colors.white,
+                                            color: context.cardBackground,
                                             border: Border.all(
                                               color: const Color(0xFFFF2D6F),
                                               width: 1.5,
                                             ),
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                           child: const Text(
                                             'ADD',

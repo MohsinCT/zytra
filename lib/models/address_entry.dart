@@ -52,8 +52,13 @@ class AddressEntry {
     return AddressEntry(
       id: json['id'] ?? '',
       userId: json['userId'],
-      address: UserAddress.fromJson(Map<String, dynamic>.from(json['address'] ?? {})),
-      type: AddressType.values.firstWhere((e) => e.toString() == (json['type'] ?? AddressType.other.toString()), orElse: () => AddressType.other),
+      address: UserAddress.fromJson(
+        Map<String, dynamic>.from(json['address'] ?? {}),
+      ),
+      type: AddressType.values.firstWhere(
+        (e) => e.toString() == (json['type'] ?? AddressType.other.toString()),
+        orElse: () => AddressType.other,
+      ),
       receiverName: json['receiverName'] ?? '',
       receiverNumber: json['receiverNumber'] ?? '',
       fields: Map<String, String>.from(json['fields'] ?? {}),
@@ -61,7 +66,9 @@ class AddressEntry {
       deliveryInstructions: json['deliveryInstructions'] ?? '',
       voiceNoteUrl: json['voiceNoteUrl'],
       isDefault: json['isDefault'] ?? false,
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
     );
   }
 }

@@ -12,7 +12,7 @@ class MapPickerProvider extends ChangeNotifier {
   bool _isDragging = false;
   bool _isGeocoding = false;
 
-  String _selectedLocality = 'Kozhikode';
+  String _selectedLocality = 'Kozhikode Beach';
   String _fullAddress = 'Kozhikode Beach, Kozhikode, Kerala 673032';
 
   final TextEditingController searchController = TextEditingController();
@@ -23,35 +23,35 @@ class MapPickerProvider extends ChangeNotifier {
     'Vellayil',
     'Poovattuparamba',
     'Valanchery',
-    'Kozhikode'
+    'Kozhikode',
   ];
 
   final Map<String, UserAddress> _mockCoordinates = {
     'Vellayil': UserAddress(
       title: 'Vellayil',
       fullAddress: 'Vellayil Beach Rd, Vellayil, Kozhikode, Kerala 673011',
-      locality: 'Vellayil',
+      locality: 'Vellayil Beach Rd',
       lat: 11.2765,
       lng: 75.7750,
     ),
     'Poovattuparamba': UserAddress(
       title: 'Poovattuparamba',
       fullAddress: 'Poovattuparamba Junction, Kozhikode, Kerala 673008',
-      locality: 'Poovattuparamba',
+      locality: 'Poovattuparamba Junction',
       lat: 11.2858,
       lng: 75.7860,
     ),
     'Valanchery': UserAddress(
       title: 'Valanchery',
       fullAddress: 'Valanchery Town, Malappuram, Kerala 676552',
-      locality: 'Valanchery',
+      locality: 'Valanchery Town',
       lat: 10.7833,
       lng: 76.1500,
     ),
     'Kozhikode': UserAddress(
       title: 'Kozhikode',
       fullAddress: 'Kozhikode Beach, Kozhikode, Kerala 673032',
-      locality: 'Kozhikode',
+      locality: 'Kozhikode Beach',
       lat: 11.2588,
       lng: 75.7804,
     ),
@@ -126,7 +126,10 @@ class MapPickerProvider extends ChangeNotifier {
     notifyListeners();
 
     _geocodeDebounce?.cancel();
-    _geocodeDebounce = Timer(const Duration(milliseconds: 600), reverseGeocodeCenter);
+    _geocodeDebounce = Timer(
+      const Duration(milliseconds: 600),
+      reverseGeocodeCenter,
+    );
   }
 
   Future<void> reverseGeocodeCenter() async {
@@ -134,21 +137,26 @@ class MapPickerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final placemarks = await placemarkFromCoordinates(_currentLat, _currentLng);
+      final placemarks = await placemarkFromCoordinates(
+        _currentLat,
+        _currentLng,
+      );
       if (placemarks.isNotEmpty) {
         final place = placemarks[0];
         final localityName = place.locality?.isNotEmpty == true
             ? place.locality!
             : (place.subAdministrativeArea?.isNotEmpty == true
-                ? place.subAdministrativeArea!
-                : (place.administrativeArea ?? 'Unknown'));
+                  ? place.subAdministrativeArea!
+                  : (place.administrativeArea ?? 'Unknown'));
 
         final parts = <String>[
-          if (place.name?.isNotEmpty == true && place.name != place.street) place.name!,
+          if (place.name?.isNotEmpty == true && place.name != place.street)
+            place.name!,
           if (place.street?.isNotEmpty == true) place.street!,
           if (place.subLocality?.isNotEmpty == true) place.subLocality!,
           if (place.locality?.isNotEmpty == true) place.locality!,
-          if (place.administrativeArea?.isNotEmpty == true) place.administrativeArea!,
+          if (place.administrativeArea?.isNotEmpty == true)
+            place.administrativeArea!,
           if (place.postalCode?.isNotEmpty == true) place.postalCode!,
         ];
 
@@ -156,7 +164,9 @@ class MapPickerProvider extends ChangeNotifier {
             .join(', ')
             .replaceAll(RegExp(r',\s*,'), ',')
             .trim();
-        _selectedLocality = localityName;
+        _selectedLocality = _fullAddress.isNotEmpty
+            ? _fullAddress.split(',').first.trim()
+            : localityName;
       }
     } catch (e) {
       debugPrint('Real geocoding failed, using local lookup fallback: $e');
@@ -172,7 +182,8 @@ class MapPickerProvider extends ChangeNotifier {
     String closest = 'Kozhikode';
 
     _mockCoordinates.forEach((name, addr) {
-      final d = (addr.lat - _currentLat) * (addr.lat - _currentLat) +
+      final d =
+          (addr.lat - _currentLat) * (addr.lat - _currentLat) +
           (addr.lng - _currentLng) * (addr.lng - _currentLng);
       if (d < minDistance) {
         minDistance = d;
@@ -184,8 +195,9 @@ class MapPickerProvider extends ChangeNotifier {
     final streetNum = ((_currentLat * 1000).abs() % 8).toInt() + 1;
     final pincodeSuffix = ((_currentLat * 10000).abs() % 90 + 10).toInt();
 
-    _selectedLocality = closest;
-    _fullAddress = 'Block $block, Street $streetNum, $closest, Calicut, Kerala 6730$pincodeSuffix';
+    _fullAddress =
+        'Block $block, Street $streetNum, $closest, Calicut, Kerala 6730$pincodeSuffix';
+    _selectedLocality = 'Block $block, Street $streetNum';
   }
 
   void resetToCurrentLocation() {
@@ -205,11 +217,15 @@ class MapPickerProvider extends ChangeNotifier {
   }
 
   // Mercator projections
-  double _lonToTileXFractional(double lon, int zoom) => (lon + 180.0) / 360.0 * pow(2.0, zoom);
+  double _lonToTileXFractional(double lon, int zoom) =>
+      (lon + 180.0) / 360.0 * pow(2.0, zoom);
   double _latToTileYFractional(double lat, int zoom) {
     final latRad = lat * pi / 180.0;
-    return (1.0 - log(tan(latRad) + 1.0 / cos(latRad)) / pi) / 2.0 * pow(2.0, zoom);
+    return (1.0 - log(tan(latRad) + 1.0 / cos(latRad)) / pi) /
+        2.0 *
+        pow(2.0, zoom);
   }
+
   double _tileXToLon(double x, int zoom) => x / pow(2.0, zoom) * 360.0 - 180.0;
   double _tileYToLat(double y, int zoom) {
     final n = pi - 2.0 * pi * y / pow(2.0, zoom);

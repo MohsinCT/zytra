@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zytranow/controllers/home_provider.dart';
 import 'package:zytranow/view/screens/home/widgets/shimmer_loader.dart';
+import 'package:zytranow/core/constants/app_constants.dart';
 
 class QuickNeedsGrid extends StatelessWidget {
   final List<Category> categories;
@@ -43,7 +43,7 @@ class QuickNeedsGrid extends StatelessWidget {
       ),
       delegate: SliverChildBuilderDelegate((context, index) {
         final cat = categories[index];
-        final imageUrl = _getImageForCategory(cat.name);
+        final imageUrl = cat.imageUrl.isNotEmpty ? cat.imageUrl : _getImageForCategory(cat.name);
 
         // Premium Fade-in on Load entrance animation
         return TweenAnimationBuilder<double>(
@@ -86,17 +86,21 @@ class _QuickNeedCard extends StatelessWidget {
           curve: Curves.easeOut,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.cardBackground,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFF2D7A).withValues(alpha: 0.06), // Soft pink shadow
+                  color: const Color(0xFFFF2D7A).withValues(
+                    alpha: context.isDark ? 0.01 : 0.06,
+                  ), // Soft pink shadow
                   blurRadius: 16,
                   offset: const Offset(0, 8),
                 ),
               ],
               border: Border.all(
-                color: const Color(0xFFFF2D7A).withValues(alpha: 0.08), // Elegant borders
+                color: const Color(0xFFFF2D7A).withValues(
+                  alpha: context.isDark ? 0.03 : 0.08,
+                ), // Elegant borders
                 width: 1.5,
               ),
             ),
@@ -106,9 +110,15 @@ class _QuickNeedCard extends StatelessWidget {
                 // 1. Soft feminine themed image/banner
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                    padding: const EdgeInsets.only(
+                      top: 8.0,
+                      left: 8.0,
+                      right: 8.0,
+                    ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20), // 20 radius rounded corner
+                      borderRadius: BorderRadius.circular(
+                        20,
+                      ), // 20 radius rounded corner
                       child: Stack(
                         children: [
                           // Pastel background gradient
@@ -131,19 +141,33 @@ class _QuickNeedCard extends StatelessWidget {
                           Positioned.fill(
                             child: Hero(
                               tag: 'quick_category_${category.name}',
-                              child: CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => const ShimmerLoader(
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  borderRadius: 20,
-                                ),
-                                errorWidget: (context, url, error) => const Icon(
-                                  Icons.image_not_supported,
-                                  color: Colors.grey,
-                                ),
-                              ),
+                              child: imageUrl.isNotEmpty
+                                  ? Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return const ShimmerLoader(
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          borderRadius: 20,
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) => Center(
+                                        child: Icon(
+                                          category.icon ?? Icons.shopping_bag_outlined,
+                                          color: const Color(0xFFFF2D6F),
+                                          size: 32,
+                                        ),
+                                      ),
+                                    )
+                                  : Center(
+                                      child: Icon(
+                                        category.icon ?? Icons.shopping_bag_outlined,
+                                        color: const Color(0xFFFF2D6F),
+                                        size: 32,
+                                      ),
+                                    ),
                             ),
                           ),
 
@@ -152,12 +176,17 @@ class _QuickNeedCard extends StatelessWidget {
                             child: Material(
                               color: Colors.transparent,
                               child: GestureDetector(
-                                onTapDown: (_) => isPressedNotifier.value = true,
+                                onTapDown: (_) =>
+                                    isPressedNotifier.value = true,
                                 onTapUp: (_) {
                                   isPressedNotifier.value = false;
-                                  Navigator.of(context).pushNamed('/category', arguments: category.name);
+                                  Navigator.of(context).pushNamed(
+                                    '/category',
+                                    arguments: category.name,
+                                  );
                                 },
-                                onTapCancel: () => isPressedNotifier.value = false,
+                                onTapCancel: () =>
+                                    isPressedNotifier.value = false,
                                 behavior: HitTestBehavior.opaque,
                               ),
                             ),
@@ -170,16 +199,19 @@ class _QuickNeedCard extends StatelessWidget {
 
                 // 2. Category name centered below the image
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 12,
+                  ),
                   child: Text(
                     category.name,
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w900, // Bold modern typography
-                      color: Colors.black87,
+                      color: context.textDark,
                       letterSpacing: 0.3,
                     ),
                   ),

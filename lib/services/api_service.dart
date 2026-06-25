@@ -138,7 +138,11 @@ class ApiConfig {
 
 class ApiService {
   /// Central HTTP GET request wrapper with dynamic host routing & offline fallback execution.
-  static Future<List<Product>> _getProductsList(String path, {Map<String, String>? queryParams, required List<Product> offlineFallback}) async {
+  static Future<List<Product>> _getProductsList(
+    String path, {
+    Map<String, String>? queryParams,
+    required List<Product> offlineFallback,
+  }) async {
     try {
       Uri uri = Uri.parse('${ApiConfig.baseUrl}$path');
       if (queryParams != null) {
@@ -146,7 +150,7 @@ class ApiService {
       }
 
       dev.log('📡 [ApiService] Sending GET request to: $uri');
-      
+
       final response = await http.get(uri).timeout(const Duration(seconds: 4));
 
       if (response.statusCode == 200) {
@@ -154,19 +158,26 @@ class ApiService {
         dev.log('✅ [ApiService] Loaded ${decoded.length} items from server.');
         return decoded.map((item) => Product.fromJson(item)).toList();
       } else {
-        dev.log('⚠️ [ApiService] Server returned non-200 status code: ${response.statusCode}');
+        dev.log(
+          '⚠️ [ApiService] Server returned non-200 status code: ${response.statusCode}',
+        );
         return offlineFallback;
       }
     } catch (e) {
       dev.log('🔌 [ApiService] Connection failed: ${e.toString()}');
-      dev.log('👉 [ApiService] Returning offline mock fallback data. Ready for offline testing!');
+      dev.log(
+        '👉 [ApiService] Returning offline mock fallback data. Ready for offline testing!',
+      );
       return offlineFallback;
     }
   }
 
   /// Fetches products matching a specific category.
   /// Node.js Equivalent: GET /api/products?category=CategoryName
-  static Future<List<Product>> getProductsByCategory(String categoryName, List<Product> offlineFallback) async {
+  static Future<List<Product>> getProductsByCategory(
+    String categoryName,
+    List<Product> offlineFallback,
+  ) async {
     return _getProductsList(
       '/products',
       queryParams: {'category': categoryName},
@@ -176,7 +187,9 @@ class ApiService {
 
   /// Fetches popular trending products for the home screen.
   /// Node.js Equivalent: GET /api/products/popular
-  static Future<List<Product>> getPopularProducts(List<Product> offlineFallback) async {
+  static Future<List<Product>> getPopularProducts(
+    List<Product> offlineFallback,
+  ) async {
     return _getProductsList(
       '/products/popular',
       offlineFallback: offlineFallback,
@@ -185,7 +198,10 @@ class ApiService {
 
   /// Searches products matching a dynamic query.
   /// Node.js Equivalent: GET /api/products/search?q=lipstick
-  static Future<List<Product>> searchProducts(String query, List<Product> offlineFallback) async {
+  static Future<List<Product>> searchProducts(
+    String query,
+    List<Product> offlineFallback,
+  ) async {
     return _getProductsList(
       '/products/search',
       queryParams: {'q': query},
@@ -195,11 +211,14 @@ class ApiService {
 
   /// Fetches complete details of a single product including related items.
   /// Node.js Equivalent: GET /api/products/:id
-  static Future<Product> getProductById(String id, Product offlineFallback) async {
+  static Future<Product> getProductById(
+    String id,
+    Product offlineFallback,
+  ) async {
     try {
       final uri = Uri.parse('${ApiConfig.baseUrl}/products/$id');
       dev.log('📡 [ApiService] Sending GET request to: $uri');
-      
+
       final response = await http.get(uri).timeout(const Duration(seconds: 4));
 
       if (response.statusCode == 200) {
@@ -207,7 +226,9 @@ class ApiService {
         dev.log('✅ [ApiService] Loaded product details from server.');
         return Product.fromJson(decoded);
       } else {
-        dev.log('⚠️ [ApiService] Server returned non-200 code: ${response.statusCode}');
+        dev.log(
+          '⚠️ [ApiService] Server returned non-200 code: ${response.statusCode}',
+        );
         return offlineFallback;
       }
     } catch (e) {

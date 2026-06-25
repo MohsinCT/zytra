@@ -37,7 +37,7 @@ class LocationProvider extends ChangeNotifier {
 
   // Allow injection for testing; default to a real instance.
   LocationProvider({LocationService? locationService})
-      : _locationService = locationService ?? LocationService() {
+    : _locationService = locationService ?? LocationService() {
     loadSavedLocation();
   }
 
@@ -96,8 +96,7 @@ class LocationProvider extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          'saved_user_address', jsonEncode(address.toJson()));
+      await prefs.setString('saved_user_address', jsonEncode(address.toJson()));
     } catch (e) {
       debugPrint('[LocationProvider] Error persisting location: $e');
     }
@@ -117,8 +116,7 @@ class LocationProvider extends ChangeNotifier {
 
     try {
       // 1. GPS / location services check
-      final serviceEnabled =
-          await _locationService.isLocationServiceEnabled();
+      final serviceEnabled = await _locationService.isLocationServiceEnabled();
       if (!serviceEnabled) {
         _permissionStatus = LocationPermissionStatus.serviceDisabled;
         _errorMessage =
@@ -127,8 +125,7 @@ class LocationProvider extends ChangeNotifier {
       }
 
       // 2. Permission check & optional request
-      LocationPermission permission =
-          await _locationService.checkPermission();
+      LocationPermission permission = await _locationService.checkPermission();
 
       if (permission == LocationPermission.denied) {
         permission = await _locationService.requestPermission();
@@ -218,8 +215,7 @@ class LocationProvider extends ChangeNotifier {
   /// Reverse geocodes a [lat]/[lng] pair — called when the map camera settles
   /// after a drag. Does NOT touch [_isLoading] at the provider level to avoid
   /// triggering a full-screen rebuild; the screen manages its own geocoding state.
-  Future<UserAddress?> reverseGeocodeCoordinates(
-      double lat, double lng) async {
+  Future<UserAddress?> reverseGeocodeCoordinates(double lat, double lng) async {
     try {
       final placemarks = await _locationService.reverseGeocode(lat, lng);
       if (placemarks.isNotEmpty) {
@@ -232,7 +228,8 @@ class LocationProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint(
-          '[LocationProvider] reverseGeocodeCoordinates error ($lat, $lng): $e');
+        '[LocationProvider] reverseGeocodeCoordinates error ($lat, $lng): $e',
+      );
     }
     return null;
   }
@@ -269,8 +266,8 @@ class LocationProvider extends ChangeNotifier {
     final locality = place.locality?.isNotEmpty == true
         ? place.locality!
         : place.subAdministrativeArea?.isNotEmpty == true
-            ? place.subAdministrativeArea!
-            : place.administrativeArea ?? 'Unknown Location';
+        ? place.subAdministrativeArea!
+        : place.administrativeArea ?? 'Unknown Location';
 
     final parts = <String>[
       if (place.street?.isNotEmpty == true) place.street!,
@@ -287,10 +284,14 @@ class LocationProvider extends ChangeNotifier {
         .replaceAll(RegExp(r',\s*,'), ',')
         .trim();
 
+    final shortLocality = fullAddress.isNotEmpty
+        ? fullAddress.split(',').first.trim()
+        : locality;
+
     return UserAddress(
       title: title,
       fullAddress: fullAddress,
-      locality: locality,
+      locality: shortLocality,
       lat: lat,
       lng: lng,
     );

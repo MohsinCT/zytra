@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zytranow/controllers/category_provider.dart';
 import 'package:zytranow/view/screens/categories/widgets/category_card.dart';
+import 'package:zytranow/core/constants/app_constants.dart';
 
 class CategorySectionWidget extends StatelessWidget {
   final CategorySection section;
@@ -17,15 +18,15 @@ class CategorySectionWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Text(
             section.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w900, // Ultra bold modern typography
-              color: Colors.black,
+              color: context.textDark,
               letterSpacing: -0.4,
             ),
           ),
         ),
-        
+
         // Beautiful 4-column category grid with equal spacing
         GridView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -35,7 +36,8 @@ class CategorySectionWidget extends StatelessWidget {
             crossAxisCount: 4, // 4 columns per row exactly like ref image
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 0.76, // Elegant taller ratio for premium visual structure
+            childAspectRatio:
+                0.76, // Elegant taller ratio for premium visual structure
           ),
           itemCount: section.items.length,
           itemBuilder: (context, index) {

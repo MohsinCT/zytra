@@ -24,8 +24,8 @@ class HomeTopBar extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       "ZYTRA",
                       style: TextStyle(
                         fontSize: 26,
@@ -34,13 +34,13 @@ class HomeTopBar extends StatelessWidget {
                         letterSpacing: -1.0,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       "in minutes",
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: kTextDark,
+                        color: context.textDark,
                       ),
                     ),
                   ],
@@ -70,9 +70,9 @@ class HomeTopBar extends StatelessWidget {
                       child: Row(
                         children: [
                           if (displayText == 'Select Location') ...[
-                            const Icon(
+                            Icon(
                               Icons.location_on,
-                              color: kTextDark,
+                              color: context.textDark,
                               size: 16,
                             ),
                             const SizedBox(width: 4),
@@ -89,15 +89,15 @@ class HomeTopBar extends StatelessWidget {
                           else
                             Text(
                               displayText,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: kTextDark,
+                                color: context.textDark,
                               ),
                             ),
-                          const Icon(
+                          Icon(
                             Icons.keyboard_arrow_down,
-                            color: kTextDark,
+                            color: context.textDark,
                             size: 18,
                           ),
                         ],
@@ -117,19 +117,21 @@ class HomeTopBar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.cardBackground,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.15),
+                    color: Colors.grey.withOpacity(
+                      context.isDark ? 0.02 : 0.15,
+                    ),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person_outline,
-                color: kTextDark,
+                color: context.textDark,
                 size: 22,
               ),
             ),

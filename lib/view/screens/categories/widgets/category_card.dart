@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zytranow/controllers/category_provider.dart';
 import 'package:zytranow/view/screens/categories/category_products_screen.dart';
+import 'package:zytranow/core/constants/app_constants.dart';
 
 class CategoryCard extends StatelessWidget {
   final CategoryItem item;
@@ -25,55 +26,71 @@ class CategoryCard extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CategoryProductsScreen(categoryName: item.name),
+                  builder: (context) =>
+                      CategoryProductsScreen(categoryName: item.name),
                 ),
               );
             },
             onTapCancel: () => isPressedNotifier.value = false,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.cardBackground,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
+                    color: Colors.black.withValues(
+                      alpha: context.isDark ? 0.01 : 0.04,
+                    ),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ],
                 border: Border.all(
-                  color: const Color(0xFFFF2D6F).withValues(alpha: 0.05),
+                  color: const Color(
+                    0xFFFF2D6F,
+                  ).withValues(alpha: context.isDark ? 0.02 : 0.05),
                   width: 1,
                 ),
               ),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 12),
-                  Icon(
-                    item.icon,
-                    size: 28,
-                    color: const Color(0xFFFF2D6F),
-                  ),
-                  const SizedBox(height: 10),
                   Expanded(
+                    flex: 3,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(19),
+                      ),
+                      child: item.imageUrl.isNotEmpty
+                          ? Image.network(
+                              item.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Center(child: Icon(item.icon, color: const Color(0xFFFF2D6F), size: 24)),
+                            )
+                          : Center(child: Icon(item.icon, color: const Color(0xFFFF2D6F), size: 24)),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Expanded(
+                    flex: 2,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Text(
-                        item.name,
+                        item.name.replaceAll(RegExp(r'[^\w\s&]+'), '').trim(),
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11,
+                        style: TextStyle(
+                          fontSize: 9,
                           fontWeight: FontWeight.w800,
-                          color: Colors.black87,
-                          height: 1.25,
+                          color: context.textDark,
+                          height: 1.2,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                 ],
               ),
             ),

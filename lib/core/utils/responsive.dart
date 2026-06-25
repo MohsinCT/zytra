@@ -7,9 +7,9 @@ class Responsive {
   final double devicePixelRatio;
 
   Responsive._(this.context)
-      : width = MediaQuery.of(context).size.width,
-        height = MediaQuery.of(context).size.height,
-        devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    : width = MediaQuery.of(context).size.width,
+      height = MediaQuery.of(context).size.height,
+      devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
 
   factory Responsive.of(BuildContext context) => Responsive._(context);
 

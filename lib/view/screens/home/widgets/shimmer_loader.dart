@@ -36,7 +36,9 @@ class ShimmerLoader extends StatelessWidget {
                   end: Alignment(value + 1.0, 0.3),
                   colors: const [
                     Color(0xFFFFF2F6), // Extremely soft pink tint
-                    Color(0xFFFFDFEA), // Slightly darker pink for the highlight wave
+                    Color(
+                      0xFFFFDFEA,
+                    ), // Slightly darker pink for the highlight wave
                     Color(0xFFFFF2F6), // Soft pink tint
                   ],
                   stops: const [0.35, 0.5, 0.65],
