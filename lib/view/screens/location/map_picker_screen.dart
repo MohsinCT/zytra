@@ -289,17 +289,29 @@ class MapPickerScreen extends StatelessWidget {
                         color: context.textMuted,
                         size: 20,
                       ),
-                      suffixIcon: provider.searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(
-                                Icons.clear,
-                                color: context.textMuted,
-                                size: 16,
+                      suffixIcon: provider.isLoading
+                          ? const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(kPrimaryPink),
+                                ),
                               ),
-                              onPressed: () =>
-                                  provider.searchController.clear(),
                             )
-                          : null,
+                          : (provider.searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(
+                                    Icons.clear,
+                                    color: context.textMuted,
+                                    size: 16,
+                                  ),
+                                  onPressed: () =>
+                                      provider.searchController.clear(),
+                                )
+                              : null),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),

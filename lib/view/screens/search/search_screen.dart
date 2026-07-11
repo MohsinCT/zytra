@@ -459,12 +459,13 @@ class _SearchQtyControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context, listen: false);
     return Container(
+      height: 28,
       decoration: BoxDecoration(
         color: const Color(0xFFFF2D6F),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF2D6F).withOpacity(0.25),
+            color: const Color(0xFFFF2D6F).withOpacity(0.15),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -473,28 +474,29 @@ class _SearchQtyControls extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            padding: EdgeInsets.zero,
-            icon: const Icon(Icons.remove, size: 16, color: Colors.white),
-            onPressed: () => cart.removeOne(product.id),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              qty.toString(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: 13,
-              ),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => cart.removeOne(product.id),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Icon(Icons.remove, size: 12, color: Colors.white),
             ),
           ),
-          IconButton(
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            padding: EdgeInsets.zero,
-            icon: const Icon(Icons.add, size: 16, color: Colors.white),
-            onPressed: () => cart.add(product),
+          Text(
+            qty.toString(),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 11,
+            ),
+          ),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => cart.add(product),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Icon(Icons.add, size: 12, color: Colors.white),
+            ),
           ),
         ],
       ),

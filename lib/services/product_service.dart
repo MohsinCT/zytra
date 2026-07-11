@@ -173,171 +173,166 @@ class ProductService {
   ) {
     final lower = subcategory.toLowerCase();
 
+    // Lip cosmetic products
+    final lipImages = [
+      'https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600',
+      'https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?q=80&w=600',
+      'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=600',
+      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600',
+    ];
+
+    // Face makeup products (foundation, blush, primer)
+    final faceMakeupImages = [
+      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600',
+      'https://images.unsplash.com/photo-1608248597481-496100c80836?q=80&w=600',
+      'https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?q=80&w=600',
+    ];
+
+    // Eye makeup products (eyeliner, eyeshadow, mascara)
+    final eyeMakeupImages = [
+      'https://images.unsplash.com/photo-1617897903246-719242758050?q=80&w=600',
+      'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?q=80&w=600',
+      'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=600',
+    ];
+
+    // Nail products (classic polish, gel polish, nail art, press-on nails)
+    final nailImages = [
+      'https://images.unsplash.com/photo-1604654894610-df490651e56c?q=80&w=600',
+      'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?q=80&w=600',
+      'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600',
+    ];
+
+    // Skincare (serums, creams, cleansers, toners, sunscreens)
+    final skincareImages = [
+      'https://images.unsplash.com/photo-1556229010-aa3f7ff66b24?q=80&w=600',
+      'https://images.unsplash.com/photo-1608248597481-496100c80836?q=80&w=600',
+      'https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=600',
+      'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=600',
+    ];
+
+    // Haircare (shampoo, hair mask, hair color, hair stylers)
+    final haircareImages = [
+      'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600',
+      'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600',
+      'https://images.unsplash.com/photo-1556229010-aa3f7ff66b24?q=80&w=600',
+    ];
+
+    // Fashion & Apparel
     final fashionImages = [
       'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600',
       'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=600',
       'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600',
       'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=600',
+    ];
+
+    // Perfumes
+    final perfumeImages = [
+      'https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=600',
+      'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600',
+      'https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=600',
+    ];
+
+    // Footwear
+    final footwearImages = [
+      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=600',
+      'https://images.unsplash.com/photo-1539185441755-769473a23570?q=80&w=600',
+      'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=600',
+    ];
+
+    // Bags & Wallets
+    final bagsImages = [
       'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600',
+      'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?q=80&w=600',
     ];
 
-    final makeupImages = [
-      'https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600',
-      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600',
-      'https://images.unsplash.com/photo-1617897903246-719242758050?q=80&w=600',
-      'https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?q=80&w=600',
-      'https://images.unsplash.com/photo-1604654894610-df490651e56c?q=80&w=600',
+    // Travel & mobility
+    final travelImages = [
+      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=600',
+      'https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=600',
     ];
 
-    final skincareImages = [
+    // Arts & Crafts
+    final artCraftImages = [
+      'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=600',
+      'https://images.unsplash.com/photo-1519782904885-19641e4029d3?q=80&w=600',
+    ];
+
+    // Books
+    final bookImages = [
+      'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600',
+      'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600',
+    ];
+
+    // Wellness & Sex
+    final wellnessSexImages = [
+      'https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&w=600',
       'https://images.unsplash.com/photo-1608248597481-496100c80836?q=80&w=600',
-      'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=600',
-      'https://images.unsplash.com/photo-1612817288484-6f916007741a?q=80&w=600',
-      'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=600',
+    ];
+
+    // Mehandi
+    final mehandiImages = [
+      'https://images.unsplash.com/photo-1562184552-997c461abbe6?q=80&w=600',
+      'https://images.unsplash.com/photo-1590156221122-c7b3cd6d21a0?q=80&w=600',
+    ];
+
+    // Pregnancy & Maternity
+    final pregnancyImages = [
+      'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=600',
+      'https://images.unsplash.com/photo-1555252333-9f8e92e67df9?q=80&w=600',
+    ];
+
+    // Bath, Body & Hygiene
+    final hygieneImages = [
+      'https://images.unsplash.com/photo-1526947425960-945c6e72858f?q=80&w=600',
       'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=600',
     ];
 
-    final haircareImages = [
+    // Hair tools (straighteners, dryers)
+    final straightenersImages = [
       'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600',
-      'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600',
-    ];
-
-    final booksHobbiesImages = [
-      'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600',
-      'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=600',
-      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=600',
+      'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=600',
     ];
 
     List<String> baseList;
 
-    if (lower.contains('wear') ||
-        lower.contains('suit') ||
-        lower.contains('night') ||
-        lower.contains('pant') ||
-        lower.contains('bra') ||
-        lower.contains('brief') ||
-        lower.contains('boxer') ||
-        lower.contains('jacket') ||
-        lower.contains('coat') ||
-        lower.contains('sweater') ||
-        lower.contains('apparel') ||
-        lower.contains('t-shirt') ||
-        lower.contains('dress') ||
-        lower.contains('jeans') ||
-        lower.contains('skirt') ||
-        lower.contains('footwear') ||
-        lower.contains('heel') ||
-        lower.contains('flat') ||
-        lower.contains('juttis') ||
-        lower.contains('bag') ||
-        lower.contains('wallet') ||
-        lower.contains('clutch') ||
-        lower.contains('backpack') ||
-        lower.contains('pouch')) {
-      baseList = fashionImages;
-    } else if (lower.contains('lipstick') ||
-        lower.contains('gloss') ||
-        lower.contains('tint') ||
-        lower.contains('liner') ||
-        lower.contains('crayon') ||
-        lower.contains('primer') ||
-        lower.contains('palette') ||
-        lower.contains('kit') ||
-        lower.contains('foundation') ||
-        lower.contains('bb') ||
-        lower.contains('cc') ||
-        lower.contains('concealer') ||
-        lower.contains('powder') ||
-        lower.contains('blush') ||
-        lower.contains('highlighter') ||
-        lower.contains('contour') ||
-        lower.contains('remover') ||
-        lower.contains('water') ||
-        lower.contains('balm') ||
-        lower.contains('wipe') ||
-        lower.contains('kajal') ||
-        lower.contains('eyeliner') ||
-        lower.contains('mascara') ||
-        lower.contains('lash') ||
-        lower.contains('glue') ||
-        lower.contains('eyeshadow') ||
-        lower.contains('pencil') ||
-        lower.contains('pomade') ||
-        lower.contains('lacquer') ||
-        lower.contains('polish') ||
-        lower.contains('top coat') ||
-        lower.contains('art') ||
-        lower.contains('blender') ||
-        lower.contains('sponge') ||
-        lower.contains('brush') ||
-        lower.contains('tweezer') ||
-        lower.contains('razor') ||
-        lower.contains('mirror') ||
-        lower.contains('case') ||
-        lower.contains('henna') ||
-        lower.contains('mehandi')) {
-      baseList = makeupImages;
-    } else if (lower.contains('serum') ||
-        lower.contains('toner') ||
-        lower.contains('mist') ||
-        lower.contains('oil') ||
-        lower.contains('ampoule') ||
-        lower.contains('peel') ||
-        lower.contains('acid') ||
-        lower.contains('exfoliator') ||
-        lower.contains('scrub') ||
-        lower.contains('gel') ||
-        lower.contains('cream') ||
-        lower.contains('lotion') ||
-        lower.contains('sunscreen') ||
-        lower.contains('cleanser') ||
-        lower.contains('moisturizer') ||
-        lower.contains('mask') ||
-        lower.contains('butter') ||
-        lower.contains('soap') ||
-        lower.contains('bath') ||
-        lower.contains('salt') ||
-        lower.contains('soak') ||
-        lower.contains('bubble') ||
-        lower.contains('shower') ||
-        lower.contains('hygiene') ||
-        lower.contains('pad') ||
-        lower.contains('cup') ||
-        lower.contains('tampon') ||
-        lower.contains('lubricant') ||
-        lower.contains('massager') ||
-        lower.contains('condom') ||
-        lower.contains('stimulation') ||
-        lower.contains('roller') ||
-        lower.contains('steamer') ||
-        lower.contains('aroma') ||
-        lower.contains('candle') ||
-        lower.contains('diffuser')) {
+    if (lower.contains('lipstick') || lower.contains('lip') || lower.contains('gloss') || lower.contains('tint') || lower.contains('crayon') || lower.contains('liner')) {
+      baseList = lipImages;
+    } else if (lower.contains('foundation') || lower.contains('bb') || lower.contains('cc') || lower.contains('concealer') || lower.contains('powder') || lower.contains('blush') || lower.contains('highlighter') || lower.contains('primer') || lower.contains('fixer') || lower.contains('remover') || lower.contains('contour')) {
+      baseList = faceMakeupImages;
+    } else if (lower.contains('kajal') || lower.contains('eyeliner') || lower.contains('mascara') || lower.contains('lash') || lower.contains('eyeshadow') || lower.contains('brow')) {
+      baseList = eyeMakeupImages;
+    } else if (lower.contains('nail') || lower.contains('polish') || lower.contains('lacquer') || lower.contains('press-on') || lower.contains('manicure')) {
+      baseList = nailImages;
+    } else if (lower.contains('serum') || lower.contains('toner') || lower.contains('mist') || lower.contains('oil') || lower.contains('acid') || lower.contains('moisturizer') || lower.contains('cleanser') || lower.contains('mask') || lower.contains('lotion') || lower.contains('cream') || lower.contains('sunscreen') || lower.contains('spf')) {
       baseList = skincareImages;
-    } else if (lower.contains('hair') ||
-        lower.contains('shampoo') ||
-        lower.contains('conditioner') ||
-        lower.contains('tonic') ||
-        lower.contains('dye') ||
-        lower.contains('color') ||
-        lower.contains('spray') ||
-        lower.contains('gel') ||
-        lower.contains('wax') ||
-        lower.contains('pomade') ||
-        lower.contains('clay') ||
-        lower.contains('mousse') ||
-        lower.contains('foam') ||
-        lower.contains('comb') ||
-        lower.contains('detangler') ||
-        lower.contains('styler') ||
-        lower.contains('straightener') ||
-        lower.contains('dryer') ||
-        lower.contains('curler') ||
-        lower.contains('wand') ||
-        lower.contains('iron')) {
+    } else if (lower.contains('shampoo') || lower.contains('conditioner') || lower.contains('dye') || lower.contains('color') || lower.contains('hair') || lower.contains('tonic')) {
       baseList = haircareImages;
+    } else if (lower.contains('perfume') || lower.contains('fragrance') || lower.contains('mist') || lower.contains('deo') || lower.contains('attar') || lower.contains('scent')) {
+      baseList = perfumeImages;
+    } else if (lower.contains('footwear') || lower.contains('shoe') || lower.contains('sneaker') || lower.contains('heel') || lower.contains('juttis') || lower.contains('flat') || lower.contains('sandal') || lower.contains('slipper') || lower.contains('clog')) {
+      baseList = footwearImages;
+    } else if (lower.contains('bag') || lower.contains('wallet') || lower.contains('purse') || lower.contains('clutch') || lower.contains('tote') || lower.contains('sling') || lower.contains('backpack')) {
+      baseList = bagsImages;
+    } else if (lower.contains('luggage') || lower.contains('travel') || lower.contains('flight') || lower.contains('suitcases') || lower.contains('cabin')) {
+      baseList = travelImages;
+    } else if (lower.contains('paint') || lower.contains('sketch') || lower.contains('draw') || lower.contains('craft') || lower.contains('diy') || lower.contains('hobby') || lower.contains('yarn') || lower.contains('crochet') || lower.contains('needlework') || lower.contains('origami')) {
+      baseList = artCraftImages;
+    } else if (lower.contains('book') || lower.contains('fiction') || lower.contains('growth') || lower.contains('novel') || lower.contains('mindset') || lower.contains('thriller') || lower.contains('biographies') || lower.contains('history')) {
+      baseList = bookImages;
+    } else if (lower.contains('sex') || lower.contains('wellness') || lower.contains('intimate') || lower.contains('lubricant') || lower.contains('condom') || lower.contains('stimulation')) {
+      baseList = wellnessSexImages;
+    } else if (lower.contains('mehandi') || lower.contains('henna')) {
+      baseList = mehandiImages;
+    } else if (lower.contains('pregnancy') || lower.contains('maternity') || lower.contains('maternal') || lower.contains('nursing') || lower.contains('postpartum') || lower.contains('pregnant')) {
+      baseList = pregnancyImages;
+    } else if (lower.contains('hygiene') || lower.contains('pad') || lower.contains('tampon') || lower.contains('cup') || lower.contains('feminine') || lower.contains('intimate wash')) {
+      baseList = hygieneImages;
+    } else if (lower.contains('straightener') || lower.contains('dryer') || lower.contains('iron') || lower.contains('curler') || lower.contains('styler') || lower.contains('blow')) {
+      baseList = straightenersImages;
+    } else if (lower.contains('wear') || lower.contains('dress') || lower.contains('top') || lower.contains('pant') || lower.contains('jeans') || lower.contains('apparel') || lower.contains('t-shirt') || lower.contains('skirt') || lower.contains('jacket') || lower.contains('sweater') || lower.contains('suit')) {
+      baseList = fashionImages;
     } else {
-      baseList = booksHobbiesImages;
+      baseList = skincareImages; // Safe premium beauty fallback
     }
 
     final List<String> selected = [];

@@ -11,6 +11,7 @@ class MapPickerProvider extends ChangeNotifier {
   double _currentLng = 75.7804;
   bool _isDragging = false;
   bool _isGeocoding = false;
+  bool _isLoading = false;
 
   String _selectedLocality = 'Kozhikode Beach';
   String _fullAddress = 'Kozhikode Beach, Kozhikode, Kerala 673032';
@@ -18,6 +19,7 @@ class MapPickerProvider extends ChangeNotifier {
   final TextEditingController searchController = TextEditingController();
   List<String> _suggestions = [];
   Timer? _geocodeDebounce;
+  Timer? _searchDebounce;
 
   final List<String> _knownPlaces = [
     'Vellayil',
@@ -61,6 +63,7 @@ class MapPickerProvider extends ChangeNotifier {
   double get currentLng => _currentLng;
   bool get isDragging => _isDragging;
   bool get isGeocoding => _isGeocoding;
+  bool get isLoading => _isLoading;
   String get selectedLocality => _selectedLocality;
   String get fullAddress => _fullAddress;
   List<String> get suggestions => _suggestions;
@@ -81,14 +84,113 @@ class MapPickerProvider extends ChangeNotifier {
     final text = searchController.text.trim();
     if (text.isEmpty) {
       _suggestions = [];
+      _isLoading = false;
       notifyListeners();
       return;
     }
+
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 600), () async {
+      _isLoading = true;
+      notifyListeners();
+
+      try {
+        final biasLocality = _selectedLocality.isNotEmpty ? _selectedLocality : 'Kozhikode';
+        final localQuery = "$text, $biasLocality";
+        final globalQuery = text;
+
+        // Perform lookups in parallel
+        final results = await Future.wait([
+          locationFromAddress(localQuery).catchError((_) => <Location>[]),
+          locationFromAddress(globalQuery).catchError((_) => <Location>[]),
+        ]);
+
+        final List<Location> localLocations = results[0];
+        final List<Location> globalLocations = results[1];
+
+        // Merge: local locations first, avoid duplicates
+        final List<Location> locations = [...localLocations];
+        for (final gLoc in globalLocations) {
+          bool isDuplicate = false;
+          for (final lLoc in localLocations) {
+            if ((gLoc.latitude - lLoc.latitude).abs() < 0.005 &&
+                (gLoc.longitude - lLoc.longitude).abs() < 0.005) {
+              isDuplicate = true;
+              break;
+            }
+          }
+          if (!isDuplicate) {
+            locations.add(gLoc);
+          }
+        }
+
+        final Map<String, UserAddress> newMatches = {};
+        final List<String> newSuggestions = [];
+
+        final limit = locations.length > 4 ? 4 : locations.length;
+        for (int i = 0; i < limit; i++) {
+          final loc = locations[i];
+          try {
+            final placemarks = await placemarkFromCoordinates(loc.latitude, loc.longitude);
+            if (placemarks.isNotEmpty) {
+              final pm = placemarks.first;
+              
+              final title = pm.name?.isNotEmpty == true
+                  ? pm.name!
+                  : (pm.locality?.isNotEmpty == true
+                      ? pm.locality!
+                      : text);
+
+              final fullAddressParts = <String>[
+                if (pm.name?.isNotEmpty == true) pm.name!,
+                if (pm.street?.isNotEmpty == true && pm.street != pm.name) pm.street!,
+                if (pm.subLocality?.isNotEmpty == true) pm.subLocality!,
+                if (pm.locality?.isNotEmpty == true) pm.locality!,
+                if (pm.subAdministrativeArea?.isNotEmpty == true) pm.subAdministrativeArea!,
+                if (pm.administrativeArea?.isNotEmpty == true) pm.administrativeArea!,
+                if (pm.postalCode?.isNotEmpty == true) pm.postalCode!,
+                if (pm.country?.isNotEmpty == true) pm.country!,
+              ];
+
+              final fullAddress = fullAddressParts.join(', ').replaceAll(RegExp(r',\s*,'), ',').trim();
+              final locality = pm.locality?.isNotEmpty == true ? pm.locality! : title;
+
+              String suggestionKey = title;
+              int suffix = 1;
+              while (newSuggestions.contains(suggestionKey)) {
+                suggestionKey = '$title ($suffix)';
+                suffix++;
+              }
+
+              newSuggestions.add(suggestionKey);
+              newMatches[suggestionKey] = UserAddress(
+                title: title,
+                fullAddress: fullAddress,
+                locality: locality,
+                lat: loc.latitude,
+                lng: loc.longitude,
+              );
+            }
+          } catch (_) {}
+        }
+
+        _suggestions = newSuggestions;
+        _mockCoordinates.addAll(newMatches);
+      } catch (e) {
+        debugPrint('Dynamic geocoding in MapPicker failed: $e');
+        _loadFallbackSuggestions(text);
+      } finally {
+        _isLoading = false;
+        notifyListeners();
+      }
+    });
+  }
+
+  void _loadFallbackSuggestions(String text) {
     final lowercaseText = text.toLowerCase();
     _suggestions = _knownPlaces
         .where((place) => place.toLowerCase().contains(lowercaseText))
         .toList();
-    notifyListeners();
   }
 
   void onSuggestionSelected(String placeName) {
@@ -235,6 +337,7 @@ class MapPickerProvider extends ChangeNotifier {
   @override
   void dispose() {
     _geocodeDebounce?.cancel();
+    _searchDebounce?.cancel();
     searchController.removeListener(_onSearchChanged);
     searchController.dispose();
     super.dispose();

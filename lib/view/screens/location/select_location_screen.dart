@@ -96,8 +96,11 @@ class SelectLocationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locationProvider = context.read<LocationProvider>();
+    final currentLocality = locationProvider.savedAddress?.locality;
+
     return ChangeNotifierProvider(
-      create: (_) => SelectLocationProvider(),
+      create: (_) => SelectLocationProvider(currentLocality: currentLocality),
       child: Consumer<SelectLocationProvider>(
         builder: (context, selectLocProvider, child) {
           final suggestions = selectLocProvider.suggestions;
@@ -197,12 +200,24 @@ class SelectLocationScreen extends StatelessWidget {
           hintText: 'Search an area or address',
           hintStyle: TextStyle(color: context.textMuted, fontSize: 14),
           prefixIcon: Icon(Icons.search, color: context.textMuted),
-          suffixIcon: selectLocProvider.searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.clear, color: context.textMuted, size: 18),
-                  onPressed: () => selectLocProvider.clearSearch(),
+          suffixIcon: selectLocProvider.isLoading
+              ? const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(kPrimaryPink),
+                    ),
+                  ),
                 )
-              : null,
+              : (selectLocProvider.searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.clear, color: context.textMuted, size: 18),
+                      onPressed: () => selectLocProvider.clearSearch(),
+                    )
+                  : null),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),

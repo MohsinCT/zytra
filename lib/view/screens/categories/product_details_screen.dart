@@ -6,6 +6,7 @@ import 'package:zytranow/models/product.dart';
 import 'package:zytranow/controllers/cart_provider.dart';
 import 'package:zytranow/controllers/product_details_provider.dart';
 import 'package:zytranow/view/screens/home/widgets/shimmer_loader.dart';
+import 'package:zytranow/view/widgets/floating_cart_capsule.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final Product product;
@@ -90,40 +91,40 @@ class ProductDetailsScreen extends StatelessWidget {
                                     bottomLeft: Radius.circular(32),
                                     bottomRight: Radius.circular(32),
                                   ),
-                                  child: product.images.isNotEmpty
-                                      ? PageView.builder(
-                                          controller: provider.pageController,
-                                          itemCount: product.images.length,
-                                          onPageChanged: (idx) {
-                                            provider.setImageIndex(idx);
-                                          },
-                                          itemBuilder: (context, index) {
-                                            return Padding(
-                                              padding: const EdgeInsets.all(
-                                                20.0,
-                                              ),
-                                              child: CachedNetworkImage(
-                                                imageUrl: product.images[index],
-                                                fit: BoxFit.contain,
-                                                placeholder: (context, url) =>
-                                                    const ShimmerLoader(
-                                                      width: double.infinity,
-                                                      height: double.infinity,
-                                                      borderRadius: 0,
-                                                    ),
-                                                errorWidget:
-                                                    (
-                                                      context,
-                                                      url,
-                                                      error,
-                                                    ) => const Icon(
-                                                      Icons.image_not_supported,
-                                                      size: 50,
-                                                      color: Colors.grey,
-                                                    ),
-                                              ),
+                                  child: (product.images.isNotEmpty || product.imageAsset.isNotEmpty)
+                                      ? Builder(
+                                          builder: (context) {
+                                            final displayImages = product.images.isNotEmpty
+                                                ? product.images
+                                                : [product.imageAsset];
+                                            return PageView.builder(
+                                              controller: provider.pageController,
+                                              itemCount: displayImages.length,
+                                              onPageChanged: (idx) {
+                                                provider.setImageIndex(idx);
+                                              },
+                                              itemBuilder: (context, index) {
+                                                return Padding(
+                                                  padding: const EdgeInsets.all(20.0),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: displayImages[index],
+                                                    fit: BoxFit.contain,
+                                                    placeholder: (context, url) =>
+                                                        const ShimmerLoader(
+                                                          width: double.infinity,
+                                                          height: double.infinity,
+                                                          borderRadius: 0,
+                                                        ),
+                                                    errorWidget: (context, url, error) => const Icon(
+                                                          Icons.image_not_supported,
+                                                          size: 50,
+                                                          color: Colors.grey,
+                                                        ),
+                                                  ),
+                                                );
+                                              },
                                             );
-                                          },
+                                          }
                                         )
                                       : const SizedBox.shrink(),
                                 ),
@@ -133,12 +134,17 @@ class ProductDetailsScreen extends StatelessWidget {
                               bottom: 24,
                               left: 0,
                               right: 0,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: List.generate(
-                                  product.images.length,
-                                  (index) => AnimatedContainer(
-                                    duration: const Duration(milliseconds: 300),
+                              child: Builder(
+                                builder: (context) {
+                                  final displayImages = product.images.isNotEmpty
+                                      ? product.images
+                                      : [product.imageAsset];
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(
+                                      displayImages.length,
+                                      (index) => AnimatedContainer(
+                                        duration: const Duration(milliseconds: 300),
                                     margin: const EdgeInsets.symmetric(
                                       horizontal: 4,
                                     ),
@@ -150,8 +156,10 @@ class ProductDetailsScreen extends StatelessWidget {
                                           : Colors.grey.shade300,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                  ),
-                                ),
+                                      ),
+                                    ),
+                                  );
+                                }
                               ),
                             ),
                             if (isBeautyFashion)
@@ -1275,6 +1283,12 @@ class ProductDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: MediaQuery.of(context).padding.bottom + 90,
+                  child: const FloatingCartCapsule(),
                 ),
               ],
             ),

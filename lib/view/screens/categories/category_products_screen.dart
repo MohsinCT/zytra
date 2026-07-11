@@ -4,117 +4,61 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zytranow/controllers/category_products_provider.dart';
 import 'package:zytranow/controllers/category_provider.dart';
 import 'package:zytranow/controllers/cart_provider.dart';
+import 'package:zytranow/controllers/tab_press_notifier.dart';
 import 'package:zytranow/models/product.dart';
 import 'package:zytranow/core/utils/responsive.dart';
 import 'package:zytranow/core/constants/app_constants.dart';
 import 'package:zytranow/view/screens/categories/product_details_screen.dart';
 import 'package:zytranow/view/screens/home/widgets/shimmer_loader.dart';
+import 'package:zytranow/view/widgets/floating_cart_capsule.dart';
 
-class CategoryProductsScreen extends StatefulWidget {
+class CategoryProductsScreen extends StatelessWidget {
   final String categoryName;
 
   const CategoryProductsScreen({super.key, required this.categoryName});
-
-  @override
-  State<CategoryProductsScreen> createState() => _CategoryProductsScreenState();
-}
-
-class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
-  int _selectedSidebarIndex = 0;
-  bool _isInitialized = false;
-  late List<String> _sidebarItems;
-
-  final Map<String, List<String>> _customSubcategories = {
-    'ethnic wear': ['Kurtas & Kurtis', 'Kurta Sets & Suits', 'Sarees & Blouses', 'Ethnic Bottoms', 'Lehengas & Dupattas'],
-    'lip color': ['Bullet Lipsticks', 'Liquid Lipsticks', 'Lip Tints', 'Lip Crayons', 'Matte Lipsticks'],
-    'face base': ['Liquid Foundations', 'BB & CC Creams', 'Concealers', 'Compact Powders', 'Loose Powders'],
-    'face serums': ['Vitamin C Serums', 'Niacinamide Serums', 'Hyaluronic Serums', 'Salicylic Serums', 'Retinol Serums'],
-  };
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_isInitialized) {
-      _initSidebar();
-      _isInitialized = true;
-    }
-  }
-
-  void _initSidebar() {
-    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-
-    String normalize(String s) {
-      return s.replaceAll(RegExp(r'[^\w\s&]+'), '').trim().toLowerCase();
-    }
-
-    final normalizedCategoryName = normalize(widget.categoryName);
-
-    // Find the SubCategory matching the normalized name
-    CategoryItem? matchingSubcategory;
-    for (var sec in categoryProvider.sections) {
-      for (var sub in sec.items) {
-        if (normalize(sub.name) == normalizedCategoryName) {
-          matchingSubcategory = sub;
-          break;
-        }
-      }
-      if (matchingSubcategory != null) break;
-    }
-
-    _sidebarItems = [];
-    if (matchingSubcategory != null && matchingSubcategory.leafCategories.isNotEmpty) {
-      _sidebarItems.addAll(matchingSubcategory.leafCategories);
-    } else {
-      final key = normalizedCategoryName;
-      final custom = _customSubcategories.entries.firstWhere(
-        (entry) => key.contains(entry.key) || entry.key.contains(key),
-        orElse: () => const MapEntry('', []),
-      ).value;
-      if (custom.isNotEmpty) {
-        _sidebarItems.addAll(custom);
-      } else {
-        _sidebarItems.add(widget.categoryName);
-      }
-    }
-
-    // Load initial subcategory products
-    if (_sidebarItems.isNotEmpty) {
-      final initialSub = _sidebarItems[0];
-      final prov = Provider.of<CategoryProductsProvider>(context, listen: false);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        prov.loadCategory(initialSub);
-      });
-    }
-  }
 
   String _getSidebarItemImage(String name) {
     final lower = name.toLowerCase();
 
     if (lower.contains('lipstick') || lower.contains('lip') || lower.contains('balm') || lower.contains('gloss')) {
       return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=150';
-    } else if (lower.contains('cleanser') || lower.contains('toner') || lower.contains('wash') || lower.contains('serum') || lower.contains('mist') || lower.contains('cream')) {
+    } else if (lower.contains('cleanser') || lower.contains('toner') || lower.contains('wash') || lower.contains('serum') || lower.contains('mist') || lower.contains('cream') || lower.contains('acid')) {
       return 'https://images.unsplash.com/photo-1556229010-aa3f7ff66b24?q=80&w=150';
-    } else if (lower.contains('foundation') || lower.contains('compact') || lower.contains('powder') || lower.contains('concealer') || lower.contains('bb') || lower.contains('cc')) {
+    } else if (lower.contains('foundation') || lower.contains('compact') || lower.contains('powder') || lower.contains('concealer') || lower.contains('bb') || lower.contains('cc') || lower.contains('contour') || lower.contains('primer')) {
       return 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=150';
     } else if (lower.contains('blush') || lower.contains('highlighter')) {
       return 'https://images.unsplash.com/photo-1608248597481-496100c80836?q=80&w=150';
     } else if (lower.contains('kajal') || lower.contains('eyeliner') || lower.contains('mascara') || lower.contains('eye') || lower.contains('shadow') || lower.contains('brow')) {
       return 'https://images.unsplash.com/photo-1617897903246-719242758050?q=80&w=150';
-    } else if (lower.contains('nail') || lower.contains('polish') || lower.contains('art') || lower.contains('coffin')) {
+    } else if (lower.contains('nail') || lower.contains('polish') || lower.contains('art') || lower.contains('coffin') || lower.contains('lacquer') || lower.contains('press-on')) {
       return 'https://images.unsplash.com/photo-1604654894610-df490651e56c?q=80&w=150';
-    } else if (lower.contains('t-shirt') || lower.contains('pants') || lower.contains('clothing') || lower.contains('fashion') || lower.contains('wear') || lower.contains('dress') || lower.contains('top') || lower.contains('jeans') || lower.contains('jacket') || lower.contains('suit') || lower.contains('saree') || lower.contains('lehenga') || lower.contains('bra') || lower.contains('panty') || lower.contains('sweater') || lower.contains('hoodie') || lower.contains('robe')) {
+    } else if (lower.contains('footwear') || lower.contains('shoe') || lower.contains('sneaker') || lower.contains('heel') || lower.contains('juttis') || lower.contains('flat') || lower.contains('sandal') || lower.contains('slipper')) {
+      return 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=150';
+    } else if (lower.contains('bag') || lower.contains('wallet') || lower.contains('clutch') || lower.contains('tote') || lower.contains('sling') || lower.contains('purse')) {
+      return 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=150';
+    } else if (lower.contains('sex') || lower.contains('wellness') || lower.contains('condom') || lower.contains('lubricant') || lower.contains('intimate')) {
+      return 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&w=150';
+    } else if (lower.contains('mehandi') || lower.contains('henna')) {
+      return 'https://images.unsplash.com/photo-1562184552-997c461abbe6?q=80&w=150';
+    } else if (lower.contains('pregnancy') || lower.contains('maternity') || lower.contains('pregnant') || lower.contains('postpartum') || lower.contains('nursing')) {
+      return 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=150';
+    } else if (lower.contains('hygiene') || lower.contains('pad') || lower.contains('tampon') || lower.contains('cup') || lower.contains('feminine')) {
+      return 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?q=80&w=150';
+    } else if (lower.contains('straightener') || lower.contains('dryer') || lower.contains('iron') || lower.contains('curler') || lower.contains('styler')) {
+      return 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=150';
+    } else if (lower.contains('t-shirt') || lower.contains('pants') || lower.contains('clothing') || lower.contains('fashion') || lower.contains('wear') || lower.contains('dress') || lower.contains('top') || lower.contains('jeans') || lower.contains('jacket') || lower.contains('suit') || lower.contains('saree') || lower.contains('lehenga') || lower.contains('bra') || lower.contains('panty') || lower.contains('sweater') || lower.contains('hoodie') || lower.contains('robe') || lower.contains('apparel')) {
       return 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=150';
     } else if (lower.contains('hair') || lower.contains('shampoo') || lower.contains('styling') || lower.contains('oil') || lower.contains('conditioner') || lower.contains('spray') || lower.contains('wax') || lower.contains('comb') || lower.contains('brush')) {
       return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=150';
-    } else if (lower.contains('bath') || lower.contains('loofah') || lower.contains('sponge') || lower.contains('scrub')) {
+    } else if (lower.contains('bath') || lower.contains('loofah') || lower.contains('sponge') || lower.contains('scrub') || lower.contains('soap') || lower.contains('shower')) {
       return 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=150';
-    } else if (lower.contains('perfume') || lower.contains('gift') || lower.contains('scent') || lower.contains('fragrance') || lower.contains('mist')) {
+    } else if (lower.contains('perfume') || lower.contains('gift') || lower.contains('scent') || lower.contains('fragrance') || lower.contains('mist') || lower.contains('deo') || lower.contains('attar')) {
       return 'https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=150';
     } else if (lower.contains('book') || lower.contains('novel') || lower.contains('read') || lower.contains('journal')) {
       return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=150';
-    } else if (lower.contains('paint') || lower.contains('sketch') || lower.contains('draw') || lower.contains('craft') || lower.contains('diy') || lower.contains('hobby')) {
+    } else if (lower.contains('paint') || lower.contains('sketch') || lower.contains('draw') || lower.contains('craft') || lower.contains('diy') || lower.contains('hobby') || lower.contains('yarn') || lower.contains('crochet') || lower.contains('needlework')) {
       return 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=150';
-    } else if (lower.contains('travel') || lower.contains('luggage') || lower.contains('flight') || lower.contains('bag') || lower.contains('wallet')) {
+    } else if (lower.contains('travel') || lower.contains('luggage') || lower.contains('flight')) {
       return 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=150';
     } else if (lower.contains('cleaner') || lower.contains('detergent')) {
       return 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=150';
@@ -180,8 +124,27 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
     final prov = Provider.of<CategoryProductsProvider>(context);
+
+    // Initialize state if not already set or changed
+    if (prov.initializedCategoryName != categoryName) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        prov.initCategoryScreen(categoryName, categoryProvider);
+      });
+      return Scaffold(
+        backgroundColor: context.scaffoldBackground,
+        body: const Center(
+          child: CircularProgressIndicator(
+            color: kPrimaryPink,
+          ),
+        ),
+      );
+    }
+
     final products = prov.products;
+    final sidebarItems = prov.sidebarItems;
+    final selectedSidebarIndex = prov.selectedSidebarIndex;
     final resp = Responsive.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -198,7 +161,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.categoryName,
+              categoryName,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
@@ -235,9 +198,11 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           ),
         ),
       ),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: Stack(
         children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
           // 1. LEFT SIDEBAR
           Container(
             width: 88,
@@ -251,20 +216,18 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               ),
             ),
             child: ListView.builder(
-              itemCount: _sidebarItems.length,
+              itemCount: sidebarItems.length,
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemBuilder: (context, index) {
-                final item = _sidebarItems[index];
-                final isSelected = _selectedSidebarIndex == index;
+                final item = sidebarItems[index];
+                final isSelected = selectedSidebarIndex == index;
 
                 return _SidebarItem(
                   name: item,
                   imageUrl: _getSidebarItemImage(item),
                   isSelected: isSelected,
                   onTap: () {
-                    setState(() {
-                      _selectedSidebarIndex = index;
-                    });
+                    prov.setSelectedSidebarIndex(index);
                     prov.loadCategory(item);
                   },
                 );
@@ -338,7 +301,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                 // Curated Glam Banner
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: _CategoryBanner(category: widget.categoryName),
+                  child: _CategoryBanner(category: categoryName),
                 ),
 
                 // Products Grid
@@ -372,11 +335,19 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
           ),
         ],
       ),
-    );
+      Positioned(
+        left: 0,
+        right: 0,
+        bottom: 24,
+        child: const FloatingCartCapsule(),
+      ),
+    ],
+  ),
+);
   }
 }
 
-class _SidebarItem extends StatefulWidget {
+class _SidebarItem extends StatelessWidget {
   final String name;
   final String imageUrl;
   final bool isSelected;
@@ -390,88 +361,90 @@ class _SidebarItem extends StatefulWidget {
   });
 
   @override
-  State<_SidebarItem> createState() => _SidebarItemState();
-}
-
-class _SidebarItemState extends State<_SidebarItem> {
-  bool _isPressed = false;
-
-  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     final textStyle = TextStyle(
       fontSize: 10,
-      fontWeight: widget.isSelected ? FontWeight.w900 : FontWeight.w700,
-      color: widget.isSelected
+      fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+      color: isSelected
           ? kPrimaryPink
           : (isDark ? const Color(0xFFC5C5D2) : const Color(0xFF4A4A5A)),
     );
 
-    final itemBg = widget.isSelected
+    final itemBg = isSelected
         ? (isDark ? const Color(0xFF1E1E24) : Colors.white)
         : Colors.transparent;
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onTap();
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? 0.95 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeOut,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-          decoration: BoxDecoration(
-            color: itemBg,
-            border: Border(
-              left: BorderSide(
-                color: widget.isSelected ? kPrimaryPink : Colors.transparent,
-                width: 3.5,
+    return ChangeNotifierProvider(
+      create: (_) => TabPressNotifier(),
+      child: Consumer<TabPressNotifier>(
+        builder: (context, notifier, child) {
+          final isPressed = notifier.isPressed;
+
+          return GestureDetector(
+            onTapDown: (_) => notifier.setPressed(true),
+            onTapUp: (_) {
+              notifier.setPressed(false);
+              onTap();
+            },
+            onTapCancel: () => notifier.setPressed(false),
+            child: AnimatedScale(
+              scale: isPressed ? 0.95 : 1.0,
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOut,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                decoration: BoxDecoration(
+                  color: itemBg,
+                  border: Border(
+                    left: BorderSide(
+                      color: isSelected ? kPrimaryPink : Colors.transparent,
+                      width: 3.5,
+                    ),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected ? kPrimaryPink : Colors.transparent,
+                          width: 2.0,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: isDark ? Colors.grey[800] : Colors.grey[300],
+                          ),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.category_outlined,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: textStyle,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: widget.isSelected ? kPrimaryPink : Colors.transparent,
-                    width: 2.0,
-                  ),
-                ),
-                child: ClipOval(
-                  child: CachedNetworkImage(
-                    imageUrl: widget.imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: isDark ? Colors.grey[800] : Colors.grey[300],
-                    ),
-                    errorWidget: (context, url, error) => const Icon(
-                      Icons.category_outlined,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: textStyle,
-              ),
-            ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -872,12 +845,13 @@ class _QtyControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context, listen: false);
     return Container(
+      height: 28,
       decoration: BoxDecoration(
         color: const Color(0xFFFF2D6F),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF2D6F).withOpacity(0.25),
+            color: const Color(0xFFFF2D6F).withOpacity(0.15),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -886,28 +860,29 @@ class _QtyControls extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-            padding: EdgeInsets.zero,
-            icon: const Icon(Icons.remove, size: 14, color: Colors.white),
-            onPressed: () => cart.removeOne(product.id),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Text(
-              qty.toString(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: 11,
-              ),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => cart.removeOne(product.id),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Icon(Icons.remove, size: 12, color: Colors.white),
             ),
           ),
-          IconButton(
-            constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-            padding: EdgeInsets.zero,
-            icon: const Icon(Icons.add, size: 14, color: Colors.white),
-            onPressed: () => cart.add(product),
+          Text(
+            qty.toString(),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 11,
+            ),
+          ),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => cart.add(product),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Icon(Icons.add, size: 12, color: Colors.white),
+            ),
           ),
         ],
       ),

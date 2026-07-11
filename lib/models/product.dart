@@ -43,13 +43,56 @@ class Product {
 
   int get ratingCount => reviews;
 
+  static String _getFallbackImage(String name, String category) {
+    final lower = "${name.toLowerCase()} ${category.toLowerCase()}";
+    if (lower.contains('lipstick') || lower.contains('lip') || lower.contains('gloss') || lower.contains('balm')) {
+      return 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600';
+    } else if (lower.contains('foundation') || lower.contains('concealer') || lower.contains('powder') || lower.contains('blush') || lower.contains('makeup') || lower.contains('primer') || lower.contains('face')) {
+      return 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600';
+    } else if (lower.contains('eye') || lower.contains('kajal') || lower.contains('liner') || lower.contains('mascara')) {
+      return 'https://images.unsplash.com/photo-1617897903246-719242758050?q=80&w=600';
+    } else if (lower.contains('nail') || lower.contains('polish') || lower.contains('lacquer') || lower.contains('manicure')) {
+      return 'https://images.unsplash.com/photo-1604654894610-df490651e56c?q=80&w=600';
+    } else if (lower.contains('shampoo') || lower.contains('hair') || lower.contains('conditioner') || lower.contains('oil') || lower.contains('straightener') || lower.contains('dryer')) {
+      return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600';
+    } else if (lower.contains('wear') || lower.contains('dress') || lower.contains('clothing') || lower.contains('apparel') || lower.contains('top') || lower.contains('pants')) {
+      return 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600';
+    } else if (lower.contains('perfume') || lower.contains('fragrance') || lower.contains('scent') || lower.contains('mist')) {
+      return 'https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=600';
+    } else if (lower.contains('bag') || lower.contains('wallet') || lower.contains('purse') || lower.contains('clutch')) {
+      return 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600';
+    } else if (lower.contains('footwear') || lower.contains('shoe') || lower.contains('sneaker') || lower.contains('heel') || lower.contains('sandal')) {
+      return 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=600';
+    } else if (lower.contains('book') || lower.contains('novel') || lower.contains('read')) {
+      return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600';
+    } else if (lower.contains('art') || lower.contains('paint') || lower.contains('sketch') || lower.contains('craft')) {
+      return 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=600';
+    } else if (lower.contains('travel') || lower.contains('luggage') || lower.contains('cases')) {
+      return 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=600';
+    }
+    return 'https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=600';
+  }
+
   /// Parses a MongoDB document / JSON object into a Product object.
   /// Handles both standard MongoDB '_id' and serialized 'id' transparently.
   factory Product.fromJson(Map<String, dynamic> json) {
+    final name = json['name'] ?? '';
+    final category = json['category'] ?? '';
+
+    var imageAsset = json['imageAsset'] ?? json['image_asset'] ?? '';
+    if (imageAsset.isEmpty) {
+      imageAsset = _getFallbackImage(name, category);
+    }
+
+    var imagesList = List<String>.from(json['images'] ?? []);
+    if (imagesList.isEmpty) {
+      imagesList = [imageAsset];
+    }
+
     return Product(
       id: json['id'] ?? json['_id'] ?? '',
-      name: json['name'] ?? '',
-      imageAsset: json['imageAsset'] ?? json['image_asset'] ?? '',
+      name: name,
+      imageAsset: imageAsset,
       unit: json['unit'] ?? '1 Unit',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       deliveryTime: json['deliveryTime'] ?? json['delivery_time'] ?? '10 mins',
@@ -60,8 +103,8 @@ class Product {
       mrp: (json['mrp'] as num?)?.toDouble() ?? 0.0,
       soldCount: (json['soldCount'] as num?)?.toInt() ?? 0,
       brand: json['brand'] ?? '',
-      category: json['category'] ?? '',
-      images: List<String>.from(json['images'] ?? []),
+      category: category,
+      images: imagesList,
       specifications: Map<String, String>.from(json['specifications'] ?? {}),
       variants: List<String>.from(json['variants'] ?? []),
       similarProducts:
