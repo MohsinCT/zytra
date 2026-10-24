@@ -12,8 +12,11 @@ class HomeTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    final barBg = context.isDark ? const Color(0xFF161618) : Colors.white;
+
+    return Container(
+      color: barBg,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -40,23 +43,24 @@ class HomeTopBar extends StatelessWidget {
       textBaseline: TextBaseline.alphabetic,
       children: [
         const Text(
-          "ZYTRA",
+          "Evermi",
           style: TextStyle(
             fontSize: 26,
+            fontFamily: "Poppins", // Use your actual registered font name here
             fontWeight: FontWeight.w900,
             color: kPrimaryPink,
             letterSpacing: -1.0,
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          "in minutes",
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: context.textDark,
-          ),
-        ),
+        // Text(
+        //   "in minutes",
+        //   style: TextStyle(
+        //     fontSize: 14,
+        //     fontWeight: FontWeight.w700,
+        //     color: context.textDark,
+        //   ),
+        // ),
       ],
     );
   }
@@ -72,10 +76,10 @@ class HomeTopBar extends StatelessWidget {
           final label = activeAddress.fields['label']?.isNotEmpty == true
               ? activeAddress.fields['label']!
               : (activeAddress.type == AddressType.home
-                  ? 'Home'
-                  : activeAddress.type == AddressType.office
-                      ? 'Office'
-                      : 'Other');
+                    ? 'Home'
+                    : activeAddress.type == AddressType.office
+                    ? 'Office'
+                    : 'Other');
 
           final detailParts = <String>[
             if (activeAddress.fields['house']?.isNotEmpty == true)
@@ -107,11 +111,7 @@ class HomeTopBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (displayText == 'Select Location') ...[
-                Icon(
-                  Icons.location_on,
-                  color: context.textDark,
-                  size: 16,
-                ),
+                Icon(Icons.location_on, color: context.textDark, size: 16),
                 const SizedBox(width: 4),
               ],
               if (locationProvider.isLoading)
@@ -151,9 +151,9 @@ class HomeTopBar extends StatelessWidget {
   Widget _buildProfileButton(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const ProfileScreen()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const ProfileScreen()));
       },
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -162,19 +162,15 @@ class HomeTopBar extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(
-                context.isDark ? 0.02 : 0.15,
+              color: Colors.grey.withValues(
+                alpha: context.isDark ? 0.02 : 0.15,
               ),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Icon(
-          Icons.person_outline,
-          color: context.textDark,
-          size: 22,
-        ),
+        child: Icon(Icons.person_outline, color: context.textDark, size: 22),
       ),
     );
   }

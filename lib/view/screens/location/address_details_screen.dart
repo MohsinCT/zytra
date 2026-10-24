@@ -281,7 +281,7 @@ class AddressDetailsScreen extends StatelessWidget {
         border: Border.all(color: context.borderTheme),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(context.isDark ? 0.005 : 0.015),
+            color: Colors.black.withValues(alpha: context.isDark ? 0.005 : 0.015),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -634,7 +634,7 @@ class AddressDetailsScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: vm.isImageUploaded
               ? Container(
-                  color: kPrimaryPink.withOpacity(0.04),
+                  color: kPrimaryPink.withValues(alpha: 0.04),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [

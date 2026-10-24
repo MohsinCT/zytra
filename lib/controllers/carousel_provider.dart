@@ -23,13 +23,13 @@ class CarouselProvider extends ChangeNotifier {
   }
 
   void _startCarousel() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 3500), (timer) {
       if (pageController.hasClients) {
         currentIndex = (currentIndex + 1) % images.length;
         pageController.animateToPage(
           currentIndex,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 650),
+          curve: Curves.fastOutSlowIn,
         );
         notifyListeners();
       }

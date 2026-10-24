@@ -19,8 +19,9 @@ class AddressProvider extends ChangeNotifier {
   List<AddressEntry> get addresses => List.unmodifiable(_addresses);
 
   AddressEntry? get activeAddress {
-    if (_activeAddressId == null)
+    if (_activeAddressId == null) {
       return _addresses.isNotEmpty ? _addresses.first : null;
+    }
     try {
       return _addresses.firstWhere((a) => a.id == _activeAddressId);
     } catch (_) {
@@ -103,9 +104,7 @@ class AddressProvider extends ChangeNotifier {
       _addresses.insert(0, entry);
 
       // If this is the first address, set it active.
-      if (_activeAddressId == null) {
-        _activeAddressId = id;
-      }
+      _activeAddressId ??= id;
 
       await _saveAll();
       return id;

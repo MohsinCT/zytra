@@ -32,6 +32,11 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addMultipleItems(List<Product> products) {
+    _items.addAll(products);
+    notifyListeners();
+  }
+
   void removeOne(String productId) {
     final index = _items.indexWhere((item) => item.id == productId);
     if (index != -1) {

@@ -465,7 +465,7 @@ class _SearchQtyControls extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF2D6F).withOpacity(0.15),
+            color: const Color(0xFFFF2D6F).withValues(alpha: 0.15),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

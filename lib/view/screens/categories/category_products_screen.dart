@@ -518,7 +518,7 @@ class _CategoryBanner extends StatelessWidget {
         color: bgColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFFFE0B2).withOpacity(0.4),
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFFFE0B2).withValues(alpha: 0.4),
           width: 1.0,
         ),
       ),
@@ -851,7 +851,7 @@ class _QtyControls extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF2D6F).withOpacity(0.15),
+            color: const Color(0xFFFF2D6F).withValues(alpha: 0.15),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

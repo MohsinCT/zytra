@@ -5,7 +5,9 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:zytranow/controllers/auth_provider.dart';
 
 class OtpScreen extends StatelessWidget {
-  const OtpScreen({super.key});
+  final VoidCallback? onSuccess;
+
+  const OtpScreen({super.key, this.onSuccess});
 
   @override
   Widget build(BuildContext context) {
@@ -81,8 +83,12 @@ class OtpScreen extends StatelessWidget {
                             FilteringTextInputFormatter.digitsOnly,
                             LengthLimitingTextInputFormatter(1),
                           ],
-                          onChanged: (value) =>
-                              auth.onOtpChanged(value, index, context),
+                          onChanged: (value) => auth.onOtpChanged(
+                            value,
+                            index,
+                            context,
+                            onSuccess: onSuccess,
+                          ),
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: Colors.grey.shade50,

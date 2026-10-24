@@ -31,7 +31,7 @@ const ProductSchema = new mongoose.Schema({
   reviews: { type: Number, default: 120 },
   description: { type: String, default: '' },
   soldCount: { type: Number, default: 0 }, // e.g. 16 for '16k+ sold recently'
-  brand: { type: String, default: 'Zytra' },
+  brand: { type: String, default: 'evermi' },
   category: { type: String, required: true }, // Category or Subcategory
   images: [{ type: String }], // Array of carousel image URLs (5 images)
   specifications: { type: Map, of: String, default: {} }, // Key-value specifications

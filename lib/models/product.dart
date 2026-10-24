@@ -20,6 +20,12 @@ class Product {
   final List<String> variants;
   final List<Product> similarProducts;
 
+  // Personalization & Algorithmic Matching Fields
+  final List<String> suitableSkinTypes;
+  final List<String> targetedConcerns;
+  final List<String> ingredients;
+  final bool isCleanFormula;
+
   Product({
     required this.id,
     required this.name,
@@ -39,6 +45,10 @@ class Product {
     this.specifications = const {},
     this.variants = const [],
     this.similarProducts = const [],
+    this.suitableSkinTypes = const [],
+    this.targetedConcerns = const [],
+    this.ingredients = const [],
+    this.isCleanFormula = true,
   });
 
   int get ratingCount => reviews;
@@ -112,6 +122,10 @@ class Product {
               ?.map((p) => Product.fromJson(Map<String, dynamic>.from(p)))
               .toList() ??
           [],
+      suitableSkinTypes: List<String>.from(json['suitableSkinTypes'] ?? []),
+      targetedConcerns: List<String>.from(json['targetedConcerns'] ?? []),
+      ingredients: List<String>.from(json['ingredients'] ?? []),
+      isCleanFormula: json['isCleanFormula'] as bool? ?? true,
     );
   }
 
@@ -139,6 +153,10 @@ class Product {
       'similarProducts': similarProducts
           .map((p) => p.toJsonWithoutSimilar())
           .toList(),
+      'suitableSkinTypes': suitableSkinTypes,
+      'targetedConcerns': targetedConcerns,
+      'ingredients': ingredients,
+      'isCleanFormula': isCleanFormula,
     };
   }
 
@@ -162,6 +180,10 @@ class Product {
       'images': images,
       'specifications': specifications,
       'variants': variants,
+      'suitableSkinTypes': suitableSkinTypes,
+      'targetedConcerns': targetedConcerns,
+      'ingredients': ingredients,
+      'isCleanFormula': isCleanFormula,
     };
   }
 }

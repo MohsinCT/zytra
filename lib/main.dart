@@ -9,15 +9,19 @@ import 'package:zytranow/controllers/auth_provider.dart';
 import 'package:zytranow/controllers/carousel_provider.dart';
 import 'package:zytranow/controllers/location_provider.dart';
 import 'package:zytranow/controllers/user_provider.dart';
+import 'package:zytranow/controllers/quiz_provider.dart';
 import 'package:zytranow/controllers/theme_provider.dart';
+import 'package:zytranow/controllers/mia_provider.dart';
 import 'package:zytranow/controllers/address_provider.dart';
 import 'package:zytranow/controllers/category_products_provider.dart';
 import 'package:zytranow/controllers/cart_provider.dart';
+import 'package:zytranow/controllers/order_tracking_provider.dart';
 import 'package:zytranow/view/screens/splash/splash_screen.dart';
 import 'package:zytranow/view/screens/categories/category_products_screen.dart';
 import 'package:zytranow/view/screens/categories/subcategories_grid_screen.dart';
 import 'package:zytranow/view/screens/location/map_picker_screen.dart';
 import 'package:zytranow/view/screens/location/address_details_screen.dart';
+import 'package:zytranow/view/screens/mia/mia_screen.dart';
 
 // App entry contract (small):
 // - Input: platform device dimensions, OS text scale.
@@ -33,16 +37,19 @@ void main() {
 // Centralized providers list to keep main tidy and make it easy to add/remove providers.
 final List<SingleChildWidget> _appProviders = [
   ChangeNotifierProvider(create: (_) => NavProvider()),
+  ChangeNotifierProvider(create: (_) => MiaProvider()),
   ChangeNotifierProvider(create: (_) => HomeProvider()),
   ChangeNotifierProvider(create: (_) => CategoryProvider()),
   ChangeNotifierProvider(create: (_) => CategoryProductsProvider()),
   ChangeNotifierProvider(create: (_) => CartProvider()),
   ChangeNotifierProvider(create: (_) => OrderAgainProvider()),
+  ChangeNotifierProvider(create: (_) => OrderTrackingProvider()),
   ChangeNotifierProvider(create: (_) => AuthProvider()),
   ChangeNotifierProvider(create: (_) => CarouselProvider()),
   ChangeNotifierProvider(create: (_) => LocationProvider()),
   ChangeNotifierProvider(create: (_) => ThemeProvider()),
   ChangeNotifierProvider(create: (_) => UserProvider()),
+  ChangeNotifierProvider(create: (_) => QuizProvider()),
   ChangeNotifierProvider(create: (_) => AddressProvider()),
 ];
 
@@ -84,6 +91,7 @@ class ZytraApp extends StatelessWidget {
     // Use MaterialApp.builder to inject a responsive MediaQuery (textScaleFactor)
     // so that text and small UI elements scale reasonably across phones/tablets/web.
     return MaterialApp(
+      title: 'evermi',
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
       darkTheme: darkTheme,
@@ -111,13 +119,13 @@ class ZytraApp extends StatelessWidget {
 
             // Also respect user accessibility text scale but clamp it to a reasonable range
             // to keep UI from breaking; this combines systemTextScaleFactor and our calculated scale.
-            final systemScale = MediaQuery.of(context).textScaleFactor;
+            final systemScale = MediaQuery.of(context).textScaler.scale(1.0);
             final combined = (systemScale * textScale)
                 .clamp(0.8, 1.4)
                 .toDouble();
 
             return MediaQuery(
-              data: MediaQuery.of(context).copyWith(textScaleFactor: combined),
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(combined)),
               child: child ?? const SizedBox.shrink(),
             );
           },
@@ -147,6 +155,7 @@ class ZytraApp extends StatelessWidget {
         },
         '/map-picker': (ctx) => const MapPickerScreen(),
         '/address-details': (ctx) => const AddressDetailsScreen(),
+        '/mia': (ctx) => const MiaScreen(),
       },
     );
   }

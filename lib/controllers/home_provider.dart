@@ -149,32 +149,38 @@ class HomeProvider extends ChangeNotifier {
     quickCategories = [
       Category(
         name: 'Ethnic Wear',
-        imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=300',
+        imageUrl:
+            'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=400',
+        icon: Icons.checkroom,
+      ),
+      Category(
+        name: 'Western Wear',
+        imageUrl:
+            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=400',
         icon: Icons.checkroom,
       ),
       Category(
         name: 'Lip Color',
-        imageUrl: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=300',
+        imageUrl:
+            'https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=400',
         icon: Icons.brush,
       ),
       Category(
-        name: 'Face Base',
-        imageUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=300',
-        icon: Icons.face,
-      ),
-      Category(
         name: 'Face Serums',
-        imageUrl: 'https://images.unsplash.com/photo-1608248597481-496100c80836?q=80&w=300',
+        imageUrl:
+            'https://images.unsplash.com/photo-1608248597481-496100c80836?q=80&w=400',
         icon: Icons.science,
       ),
       Category(
         name: "Women's Perfumes",
-        imageUrl: 'https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=300',
+        imageUrl:
+            'https://images.unsplash.com/photo-1612817288484-6f916006741a?q=80&w=400',
         icon: Icons.local_florist,
       ),
       Category(
         name: 'Maternity Skincare',
-        imageUrl: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=300',
+        imageUrl:
+            'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=400',
         icon: Icons.pregnant_woman,
       ),
     ];
@@ -254,7 +260,7 @@ class HomeProvider extends ChangeNotifier {
         deliveryTime: '12 mins',
         rating: 4.4,
         reviews: 95,
-        brand: 'Zytra',
+        brand: 'evermi',
         category: 'Night Suits',
         images: [
           'https://images.unsplash.com/photo-1590736969955-71cb94801758?q=80&w=600',
@@ -417,7 +423,7 @@ class HomeProvider extends ChangeNotifier {
         sections.firstWhere((sec) => sec.title == 'Face Cosmetics'),
         sections.firstWhere((sec) => sec.title == 'Eye Makeup'),
       ];
-    } else if (activeTab == 'Pregnant & Kids') {
+    } else if (activeTab == 'Pregnancy Mom' || activeTab == 'Pregnant & Kids') {
       quickCategories = [
         Category(
           name: 'Maternity Skincare',
@@ -451,6 +457,35 @@ class HomeProvider extends ChangeNotifier {
         sections.firstWhere((sec) => sec.title == "pregnancy time women's essentials"),
         sections.firstWhere((sec) => sec.title == 'pregnancy test kits'),
       ];
+    } else if (activeTab == 'Kids') {
+      quickCategories = [
+        Category(
+          name: 'Kids Care & Bath',
+          imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=300',
+          icon: Icons.child_care,
+        ),
+        Category(
+          name: 'Kids Accessories',
+          imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=300',
+          icon: Icons.toys,
+        ),
+      ];
+
+      allCategories = List.from(quickCategories);
+
+      banners = [
+        BannerModel(
+          title: "Gentle Care & Essentials for Kids",
+          category: "Bath Essentials",
+          icon: Icons.child_care,
+          backgroundImage: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=600',
+        ),
+      ];
+
+      activeSections = [
+        getSection('Bath Essentials') ?? sections[0],
+        getSection('Beauty Accessories') ?? sections[1],
+      ].whereType<CategorySection>().toList();
     }
   }
 

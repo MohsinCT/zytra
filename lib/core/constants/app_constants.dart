@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 // ─── Brand Colours ───────────────────────────────────────────────────────────
 
-/// Zytra primary brand pink — used for CTAs, pins, active states.
+/// evermi primary brand pink — used for CTAs, pins, active states.
 const Color kPrimaryPink = Color(0xFFFF2D6F);
 
 /// Light pink tint for backgrounds / containers.

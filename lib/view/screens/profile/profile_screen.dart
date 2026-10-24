@@ -12,71 +12,277 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserProvider>();
+
     return Scaffold(
-      backgroundColor: context.scaffoldBackground, // Zytra white background
-      body: CustomScrollView(
-        slivers: [
-          _buildDarkHeader(context),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  _buildQuickActions(context),
-                  const SizedBox(height: 24),
-                  _buildSettingsCards(context),
-                  const SizedBox(height: 28),
-                  _buildSectionTitle("YOUR INFORMATION", context),
-                  const SizedBox(height: 12),
-                  _buildInfoList([
-                    _ListItem(
-                      "Your Orders",
-                      Icons.receipt_long_outlined,
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Orders screen coming soon!'),
+      backgroundColor: context.scaffoldBackground,
+      body: user.isLoggedIn
+          ? CustomScrollView(
+              slivers: [
+                _buildDarkHeader(context),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+                        _buildQuickActions(context),
+                        const SizedBox(height: 24),
+                        _buildSettingsCards(context),
+                        const SizedBox(height: 28),
+                        _buildSectionTitle("YOUR INFORMATION", context),
+                        const SizedBox(height: 12),
+                        _buildInfoList([
+                          _ListItem(
+                            "Your Orders",
+                            Icons.receipt_long_outlined,
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Orders screen coming soon!'),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                    _ListItem(
-                      "Wishlist",
-                      Icons.favorite_border,
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Wishlist screen coming soon!'),
+                          _ListItem(
+                            "Wishlist",
+                            Icons.favorite_border,
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Wishlist screen coming soon!'),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                    _ListItem(
-                      "Saved Addresses",
-                      Icons.location_on_outlined,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SelectLocationScreen(),
+                          _ListItem(
+                            "Saved Addresses",
+                            Icons.location_on_outlined,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const SelectLocationScreen(),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ], context),
+                        const SizedBox(height: 32),
+                        _buildLogoutTile(context),
+                        const SizedBox(height: 32),
+                        _buildTermsAndPrivacyLinks(context),
+                        const SizedBox(height: 32),
+                        _buildFooter(),
+                        const SizedBox(height: 60),
+                      ],
                     ),
-                  ], context),
-                  const SizedBox(height: 32),
-                  _buildLogoutTile(context),
-                  const SizedBox(height: 48),
-                  _buildFooter(),
-                  const SizedBox(height: 60),
-                ],
-              ),
+                  ),
+                ),
+              ],
+            )
+          : _buildGuestProfile(context),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Guest Layout (Instamart Inspired for Zytra)
+  // ---------------------------------------------------------------------------
+  Widget _buildGuestProfile(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Container(
+            color: const Color(0xFF1C1C1E),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 16,
+              left: 20,
+              right: 20,
+              bottom: 28,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (Navigator.canPop(context))
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/evermi_logo.png',
+                      width: 56,
+                      height: 56,
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Welcome to evermi",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Log in to view your profile & saved addresses",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF9E9EAE),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LoginScreen(
+                            onLoginSuccess: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF2D6F),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      "LOGIN / SIGN UP",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 24),
+                _buildSectionTitle("GENERAL INFORMATION", context),
+                const SizedBox(height: 12),
+                _buildInfoList([
+                  _ListItem(
+                    "Saved Addresses",
+                    Icons.location_on_outlined,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SelectLocationScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _ListItem(
+                    "Help & Support",
+                    Icons.help_outline_rounded,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Contact support at support@zytra.com"),
+                        ),
+                      );
+                    },
+                  ),
+                ], context),
+                const SizedBox(height: 24),
+                _buildSettingsCards(context),
+                const SizedBox(height: 36),
+                _buildTermsAndPrivacyLinks(context),
+                const SizedBox(height: 24),
+                _buildFooter(),
+                const SizedBox(height: 60),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTermsAndPrivacyLinks(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Terms of Service')));
+          },
+          child: Text(
+            "Terms of Service",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: context.textMuted,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text("•", style: TextStyle(color: context.textMuted)),
+        ),
+        GestureDetector(
+          onTap: () {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Privacy Policy')));
+          },
+          child: Text(
+            "Privacy Policy",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: context.textMuted,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -104,7 +310,7 @@ class ProfileScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -184,13 +390,13 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: hasName
-              ? Colors.white.withOpacity(0.08)
-              : kPrimaryPink.withOpacity(0.15),
+              ? Colors.white.withValues(alpha: 0.08)
+              : kPrimaryPink.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: hasName
-                ? Colors.white.withOpacity(0.12)
-                : kPrimaryPink.withOpacity(0.4),
+                ? Colors.white.withValues(alpha: 0.12)
+                : kPrimaryPink.withValues(alpha: 0.4),
             width: 1,
           ),
         ),
@@ -200,8 +406,8 @@ class ProfileScreen extends StatelessWidget {
             CircleAvatar(
               radius: 24,
               backgroundColor: hasName
-                  ? Colors.white.withOpacity(0.12)
-                  : kPrimaryPink.withOpacity(0.25),
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : kPrimaryPink.withValues(alpha: 0.25),
               child: hasName
                   ? Text(
                       displayName.substring(0, 1).toUpperCase(),
@@ -408,7 +614,9 @@ class ProfileScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(context.isDark ? 0.005 : 0.015),
+              color: Colors.black.withValues(
+                alpha: context.isDark ? 0.005 : 0.015,
+              ),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -444,7 +652,9 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(context.isDark ? 0.005 : 0.015),
+            color: Colors.black.withValues(
+              alpha: context.isDark ? 0.005 : 0.015,
+            ),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -534,7 +744,7 @@ class ProfileScreen extends StatelessWidget {
                 Switch(
                   value: homeProvider.isSensitiveHidden,
                   onChanged: homeProvider.toggleSensitiveItems,
-                  activeColor: Colors.white,
+                  activeThumbColor: Colors.white,
                   activeTrackColor: kPrimaryPink,
                   inactiveTrackColor: context.isDark
                       ? Colors.grey.shade800
@@ -602,7 +812,9 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(context.isDark ? 0.005 : 0.015),
+            color: Colors.black.withValues(
+              alpha: context.isDark ? 0.005 : 0.015,
+            ),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -675,7 +887,9 @@ class ProfileScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(context.isDark ? 0.005 : 0.015),
+              color: Colors.black.withValues(
+                alpha: context.isDark ? 0.005 : 0.015,
+              ),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -686,8 +900,8 @@ class ProfileScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red.shade50.withOpacity(
-                  context.isDark ? 0.15 : 1.0,
+                color: Colors.red.shade50.withValues(
+                  alpha: context.isDark ? 0.15 : 1.0,
                 ),
                 shape: BoxShape.circle,
               ),
@@ -715,7 +929,7 @@ class ProfileScreen extends StatelessWidget {
             Icon(
               Icons.chevron_right,
               color: context.isDark
-                  ? Colors.red.shade400.withOpacity(0.4)
+                  ? Colors.red.shade400.withValues(alpha: 0.4)
                   : Colors.red.shade200,
               size: 20,
             ),
@@ -759,13 +973,7 @@ class ProfileScreen extends StatelessWidget {
             onPressed: () {
               Navigator.pop(ctx);
               final user = Provider.of<UserProvider>(context, listen: false);
-              user.setPhoneNumber('');
-              user.clearName();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
-              );
+              user.logout();
             },
             child: const Text("Log out"),
           ),
@@ -782,7 +990,7 @@ class ProfileScreen extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            "ZYTRA",
+            "evermi",
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w900,

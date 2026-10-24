@@ -3,19 +3,28 @@
 <plist version="1.0">
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Zytra needs your location to show nearby stores and deliver groceries fast to your doorstep.</string>
+	<string>evermi needs your location to show nearby stores and deliver groceries fast to your doorstep.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Zytra needs your location to show nearby stores and deliver groceries fast to your doorstep.</string>
+	<string>evermi needs your location to show nearby stores and deliver groceries fast to your doorstep.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Zytra needs your location to show nearby stores and deliver groceries fast to your doorstep.</string>
+	<string>evermi needs your location to show nearby stores and deliver groceries fast to your doorstep.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Zytra uses motion data to improve location accuracy for faster deliveries.</string>
+	<string>evermi uses motion data to improve location accuracy for faster deliveries.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>evermi needs access to your photos to allow you to upload profile photos.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>evermi needs access to your camera to allow you to take profile photos.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Zytranow</string>
+	<string>evermi</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,7 +32,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>zytranow</string>
+	<string>evermi</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

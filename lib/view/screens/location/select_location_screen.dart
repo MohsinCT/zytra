@@ -67,7 +67,7 @@ class SelectLocationScreen extends StatelessWidget {
         await addressProvider.setActive(newId);
 
         if (context.mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          Navigator.pop(context);
         }
       } else {
         // Show error message from provider
@@ -429,7 +429,7 @@ class SelectLocationScreen extends StatelessWidget {
                 await locProvider.saveConfirmedLocation(entry.address);
 
                 if (context.mounted) {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
                 }
               },
               borderRadius: BorderRadius.circular(16),

@@ -16,15 +16,21 @@ class ProductDetailsScreen extends StatelessWidget {
   // Helper to color shades if makeup categories
   Color _getColorForShade(String variantName) {
     final lower = variantName.toLowerCase();
-    if (lower.contains('rose') || lower.contains('pink'))
+    if (lower.contains('rose') || lower.contains('pink')) {
       return const Color(0xFFFF6B8B);
-    if (lower.contains('red') || lower.contains('crimson'))
+    }
+    if (lower.contains('red') || lower.contains('crimson')) {
       return const Color(0xFFD32F2F);
-    if (lower.contains('coral') || lower.contains('gold'))
+    }
+    if (lower.contains('coral') || lower.contains('gold')) {
       return const Color(0xFFFF8A65);
-    if (lower.contains('nude') || lower.contains('velvet'))
+    }
+    if (lower.contains('nude') || lower.contains('velvet')) {
       return const Color(0xFFD7CCC8);
-    if (lower.contains('plum')) return const Color(0xFF4A148C);
+    }
+    if (lower.contains('plum')) {
+      return const Color(0xFF4A148C);
+    }
     return const Color(0xFFFF2D6F); // fallback
   }
 
@@ -76,9 +82,12 @@ class ProductDetailsScreen extends StatelessWidget {
                             Hero(
                               tag: 'product_image_${product.id}',
                               child: Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.45,
+                                height: MediaQuery.of(context).size.height * 0.48 + MediaQuery.of(context).padding.top,
                                 width: double.infinity,
+                                padding: EdgeInsets.only(
+                                  top: MediaQuery.of(context).padding.top + 52,
+                                  bottom: 10,
+                                ),
                                 decoration: const BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.only(
@@ -105,7 +114,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                               },
                                               itemBuilder: (context, index) {
                                                 return Padding(
-                                                  padding: const EdgeInsets.all(20.0),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                                                   child: CachedNetworkImage(
                                                     imageUrl: displayImages[index],
                                                     fit: BoxFit.contain,
@@ -1062,76 +1071,53 @@ class ProductDetailsScreen extends StatelessWidget {
                   ),
                 ),
 
-                // 9. Premium Translucent Floating Header
+                // 9. Premium Floating Header Action Buttons
                 Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: ClipRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                      child: Container(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top + 4,
-                          bottom: 12,
-                          left: 8,
-                          right: 8,
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back_ios_new,
-                                color: Colors.black,
-                                size: 20,
-                              ),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                            const Spacer(),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.search,
-                                color: Colors.black,
-                                size: 22,
-                              ),
-                              onPressed: () {},
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                isLiked
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: isLiked
-                                    ? const Color(0xFFFF2D6F)
-                                    : Colors.black,
-                                size: 22,
-                              ),
-                              onPressed: () {
-                                provider.toggleLike();
-                                cart.toggleWishlist(product.id);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.share_outlined,
-                                color: Colors.black,
-                                size: 22,
-                              ),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Product link copied to clipboard!',
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
+                  top: MediaQuery.of(context).padding.top + 6,
+                  left: 12,
+                  right: 12,
+                  child: Row(
+                    children: [
+                      // Back Button
+                      _buildCircleHeaderButton(
+                        icon: Icons.arrow_back_ios_new,
+                        size: 18,
+                        onPressed: () => Navigator.pop(context),
                       ),
-                    ),
+                      const Spacer(),
+                      // Search Button
+                      _buildCircleHeaderButton(
+                        icon: Icons.search,
+                        size: 20,
+                        onPressed: () {},
+                      ),
+                      const SizedBox(width: 8),
+                      // Favorite/Wishlist Button
+                      _buildCircleHeaderButton(
+                        icon: isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? const Color(0xFFFF2D6F) : Colors.black87,
+                        size: 20,
+                        onPressed: () {
+                          provider.toggleLike();
+                          cart.toggleWishlist(product.id);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      // Share Button
+                      _buildCircleHeaderButton(
+                        icon: Icons.share_outlined,
+                        size: 20,
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Product link copied to clipboard!',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
 
@@ -1323,6 +1309,34 @@ class ProductDetailsScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCircleHeaderButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    double size = 20,
+    Color? color,
+  }) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        icon: Icon(icon, color: color ?? Colors.black87, size: size),
+        onPressed: onPressed,
       ),
     );
   }

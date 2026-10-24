@@ -20,16 +20,13 @@ class CategoriesScreen extends StatelessWidget {
         child: CustomScrollView(
           slivers: [
             const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(top: 10, bottom: 10),
-                child: HomeTopBar(),
-              ),
+              child: HomeTopBar(),
             ),
             SliverAppBar(
               pinned: true,
               floating: true,
               primary: false,
-              backgroundColor: context.scaffoldBackground,
+              backgroundColor: context.isDark ? const Color(0xFF161618) : Colors.white,
               elevation: 0,
               toolbarHeight: 70,
               titleSpacing: 0,

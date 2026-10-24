@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zytranow/controllers/cart_provider.dart';
+import 'package:zytranow/controllers/user_provider.dart';
+import 'package:zytranow/controllers/location_provider.dart';
+import 'package:zytranow/controllers/address_provider.dart';
+import 'package:zytranow/models/address_entry.dart';
 import 'package:zytranow/core/utils/responsive.dart';
 import 'package:zytranow/view/screens/home/widgets/shimmer_loader.dart';
 import 'package:zytranow/models/product.dart';
+import 'package:zytranow/view/screens/hold_on_screen.dart';
+import 'package:zytranow/view/screens/auth/login_screen.dart';
+import 'package:zytranow/view/screens/location/select_location_screen.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -26,6 +33,7 @@ class CartScreen extends StatelessWidget {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new,
@@ -74,6 +82,7 @@ class CartScreen extends StatelessWidget {
                             child: ListView(
                               padding: const EdgeInsets.all(24),
                               children: [
+                                _buildDeliveryAddressCard(context),
                                 _buildItemsList(
                                   context,
                                   cart,
@@ -95,7 +104,7 @@ class CartScreen extends StatelessWidget {
                                 border: Border.all(color: Colors.grey.shade100),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
+                                    color: Colors.black.withValues(alpha: 0.02),
                                     blurRadius: 16,
                                     offset: const Offset(0, 8),
                                   ),
@@ -127,6 +136,7 @@ class CartScreen extends StatelessWidget {
                                 vertical: 12,
                               ),
                               children: [
+                                _buildDeliveryAddressCard(context),
                                 _buildItemsList(
                                   context,
                                   cart,
@@ -152,6 +162,241 @@ class CartScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildDeliveryAddressCard(BuildContext context) {
+    return Consumer2<LocationProvider, AddressProvider>(
+      builder: (context, locationProvider, addressProvider, _) {
+        final activeAddress = addressProvider.activeAddress;
+        final savedLoc = locationProvider.savedAddress;
+
+        String label = 'Home';
+        IconData typeIcon = Icons.home_rounded;
+        String details = 'No address selected';
+        String? receiverInfo;
+
+        if (activeAddress != null) {
+          if (activeAddress.type == AddressType.office) {
+            typeIcon = Icons.work_rounded;
+            label = 'Office';
+          } else if (activeAddress.type == AddressType.other) {
+            typeIcon = Icons.location_on_rounded;
+            label = 'Other';
+          } else {
+            typeIcon = Icons.home_rounded;
+            label = 'Home';
+          }
+
+          if (activeAddress.fields['label']?.isNotEmpty == true) {
+            label = activeAddress.fields['label']!;
+          }
+
+          details = activeAddress.address.fullAddress;
+          if (activeAddress.receiverName.isNotEmpty) {
+            receiverInfo =
+                'Receiver: ${activeAddress.receiverName} (${activeAddress.receiverNumber})';
+          }
+        } else if (savedLoc != null) {
+          label = 'Delivery Location';
+          typeIcon = Icons.location_on_rounded;
+          details = savedLoc.fullAddress;
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFFFF2D6F).withValues(alpha: 0.06),
+                const Color(0xFFFF6A9A).withValues(alpha: 0.02),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFFFF2D6F).withValues(alpha: 0.28),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF2D6F).withValues(alpha: 0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SelectLocationScreen(),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Prominent Icon Box
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF2D6F), Color(0xFFFF5287)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFFFF2D6F,
+                            ).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Icon(typeIcon, color: Colors.white, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    // Address Details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'DELIVERING TO',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.0,
+                                  color: Color(0xFFFF2D6F),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFFFF2D6F,
+                                  ).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  label.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFFFF2D6F),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            details,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                              height: 1.25,
+                            ),
+                          ),
+                          if (receiverInfo != null) ...[
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.person_outline,
+                                  size: 13,
+                                  color: Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    receiverInfo,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    // Highly Noticeable Change Button
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFFF2D6F).withValues(alpha: 0.5),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'CHANGE',
+                            style: TextStyle(
+                              color: Color(0xFFFF2D6F),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          SizedBox(width: 2),
+                          Icon(
+                            Icons.edit_location_alt_outlined,
+                            color: Color(0xFFFF2D6F),
+                            size: 14,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildEmptyState(BuildContext context, Responsive resp) {
     return Center(
       child: Column(
@@ -160,7 +405,7 @@ class CartScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF2D6F).withOpacity(0.05),
+              color: const Color(0xFFFF2D6F).withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -194,7 +439,7 @@ class CartScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               elevation: 4,
-              shadowColor: const Color(0xFFFF2D6F).withOpacity(0.3),
+              shadowColor: const Color(0xFFFF2D6F).withValues(alpha: 0.3),
             ),
             child: const Text(
               'Shop Now',
@@ -244,7 +489,7 @@ class CartScreen extends StatelessWidget {
                 border: Border.all(color: Colors.grey.shade100),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -266,12 +511,12 @@ class CartScreen extends StatelessWidget {
                               ? CachedNetworkImage(
                                   imageUrl: product.imageAsset,
                                   fit: BoxFit.contain,
-                                  placeholder: (_, __) => const ShimmerLoader(
+                                  placeholder: (_, _) => const ShimmerLoader(
                                     width: double.infinity,
                                     height: double.infinity,
                                     borderRadius: 8,
                                   ),
-                                  errorWidget: (_, __, ___) => const Icon(
+                                  errorWidget: (_, _, _) => const Icon(
                                     Icons.image_not_supported_outlined,
                                     color: Colors.grey,
                                   ),
@@ -332,7 +577,9 @@ class CartScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFF2D6F).withOpacity(0.2),
+                              color: const Color(
+                                0xFFFF2D6F,
+                              ).withValues(alpha: 0.2),
                               blurRadius: 6,
                               offset: const Offset(0, 3),
                             ),
@@ -413,7 +660,7 @@ class CartScreen extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.01),
+            color: Colors.black.withValues(alpha: 0.01),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -514,12 +761,15 @@ class CartScreen extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
         ],
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
       ),
       child: Row(
         children: [
@@ -556,9 +806,25 @@ class CartScreen extends StatelessWidget {
   }
 
   Widget _buildCheckoutButton(BuildContext context, double grandTotal) {
+    final user = context.watch<UserProvider>();
+    final isLoggedIn = user.isLoggedIn;
+
     return GestureDetector(
       onTap: () {
-        _handleCheckout(context);
+        if (isLoggedIn) {
+          _handleCheckout(context);
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => LoginScreen(
+                onLoginSuccess: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          );
+        }
       },
       child: Container(
         height: 52,
@@ -569,26 +835,32 @@ class CartScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF2D6F).withOpacity(0.35),
+              color: const Color(0xFFFF2D6F).withValues(alpha: 0.35),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Proceed to Checkout',
-              style: TextStyle(
+              isLoggedIn ? 'Proceed to Checkout' : 'Proceed with phone number',
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
                 letterSpacing: 0.5,
               ),
             ),
-            SizedBox(width: 8),
-            Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Icon(
+              isLoggedIn
+                  ? Icons.arrow_forward_rounded
+                  : Icons.phone_android_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
           ],
         ),
       ),
@@ -597,45 +869,17 @@ class CartScreen extends StatelessWidget {
 
   void _handleCheckout(BuildContext context) {
     final cart = Provider.of<CartProvider>(context, listen: false);
-    cart.clearCart();
+    final itemTotal = cart.totalPrice;
+    final deliveryFee = itemTotal > 500 ? 0.0 : 15.0;
+    final handlingCharge = itemTotal > 0 ? 2.0 : 0.0;
+    final grandTotal = itemTotal + deliveryFee + handlingCharge;
+    final totalItems = cart.totalItems;
 
-    // Navigate back to MainScreen and show confirmation snackbar
-    Navigator.of(context).pop();
-
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFF1E1E24),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 4),
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 24),
-            SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Order Placed Successfully!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  Text(
-                    'Zytra Now is preparing your emergency delivery.',
-                    style: TextStyle(color: Colors.grey, fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+    // Navigate to HoldOnScreen (Step 1: 3s -> Step 2: 2s Success -> Step 3: Order Tracking)
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) =>
+            HoldOnScreen(itemCount: totalItems, grandTotal: grandTotal),
       ),
     );
   }
